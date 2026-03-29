@@ -71,10 +71,14 @@ autoload/
     dumb_jump.vim        ← Vim9script Dumb Jump patterns + rg/git helpers
     dumb_jump/
       legacy.vim         ← legacy Dumb Jump patterns + rg/git helpers
+    filetype.vim         ← Vim9script filetype-aware rg/git grep helpers
+    filetype/
+      legacy.vim         ← legacy filetype-aware rg/git grep helpers
 lua/
   zero_grep.lua          ← Neovim core + context dispatch
   zero_grep/
     dumb_jump.lua        ← Neovim Dumb Jump patterns + rg/git helpers
+    filetype.lua         ← Neovim filetype-aware rg/git grep helpers
 ```
 
 ## API reference
@@ -118,11 +122,25 @@ zero_grep#dumb_jump#RgCword()        " -s -t lua "(pats)"
 zero_grep#dumb_jump#GitCword()       " "(pats)" -- '*.lua'
 ```
 
+### Filetype-aware rg / git grep (Vim9script autoload)
+
+Wraps each word getter with `-t <type>` (rg) or `-- '*.ext'` (git grep) derived
+from the current buffer's filetype.
+
+```vim
+zero_grep#filetype#RgCCword()    zero_grep#filetype#RgCword()
+zero_grep#filetype#RgWord()      zero_grep#filetype#RgVword()
+
+zero_grep#filetype#GitCCword()   zero_grep#filetype#GitCword()
+zero_grep#filetype#GitWord()     zero_grep#filetype#GitVword()
+```
+
 ### Neovim Lua
 
 ```lua
 local zg = require('zero_grep')
 local dj = require('zero_grep.dumb_jump')
+local ft = require('zero_grep.filetype')
 
 zg.CCword()  zg.Cword()  zg.Word()  zg.Vword()  zg.Pword()
 zg.grep_CCword()    zg.grep_Cword()    ...
@@ -135,6 +153,9 @@ zg.insert_CCword()  -- context-aware, for <C-R>= keymaps
 
 dj.Cword()       dj.CwordArgs()
 dj.rg_Cword()    dj.git_Cword()
+
+ft.rg_CCword()   ft.rg_Cword()   ft.rg_Word()   ft.rg_Vword()
+ft.git_CCword()  ft.git_Cword()  ft.git_Word()  ft.git_Vword()
 ```
 
 ## Requirements
