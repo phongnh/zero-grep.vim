@@ -1,11 +1,11 @@
-vim9script
-
-# plugin/zero_grep.vim - Word getter commands and mappings (Vim9script)
-# Maintainer: Phong Nguyen
+" plugin/zero_grep.vim - Word getter commands and mappings (Vim9script)
+" Maintainer: Phong Nguyen
 
 if !has('vim9script') || has('nvim') || exists('g:loaded_zero_grep')
     finish
 endif
+
+vim9script
 
 g:loaded_zero_grep = 1
 
