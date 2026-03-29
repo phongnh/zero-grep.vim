@@ -74,7 +74,7 @@ var RG_FILETYPES: dict<list<string>> = {
 # Map vim filetype to rg filetype
 # - key: vim filetype 
 # - value: rg filetype
-var RG_FILETYPE_MAPPINGS: dict<string> = {
+var RG_FILETYPE_MAP: dict<string> = {
     'python':          'py',
     'javascript':      'js',
     'javascriptreact': 'js',
