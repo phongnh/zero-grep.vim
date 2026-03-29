@@ -13,14 +13,6 @@ const SHELL_ESCAPE_CHARS     = '\^$.*+?()[]{}|-'
 const LEADERF_ESCAPE_CHARS   = '\^$.*+?()[]{}|-"'
 
 # ============================================================================
-# Trim
-# ============================================================================
-
-def Trim(str: string): string
-    return trim(str)
-enddef
-
-# ============================================================================
 # Raw Word Getters
 # ============================================================================
 
@@ -183,11 +175,11 @@ export def ShellWord(): string
 enddef
 
 export def ShellVword(): string
-    return ShellEscape(Trim(Vword()))
+    return ShellEscape(trim(Vword()))
 enddef
 
 export def ShellPword(): string
-    return ShellEscape(Trim(Pword()))
+    return ShellEscape(trim(Pword()))
 enddef
 
 # --- leaderf ---
@@ -212,11 +204,11 @@ export def LeaderfWord(): string
 enddef
 
 export def LeaderfVword(): string
-    return LeaderfEscape(Trim(Vword()))
+    return LeaderfEscape(trim(Vword()))
 enddef
 
 export def LeaderfPword(): string
-    return LeaderfEscape(Trim(Pword()))
+    return LeaderfEscape(trim(Pword()))
 enddef
 
 # ============================================================================
