@@ -81,7 +81,7 @@ const RG_FILETYPE_MAP: dict<string> = {
     'typescriptreact': 'ts',
 }
 
-export def RgFileTypeOpts(ft: string = ''): list<string>
+export def RgFileTypeArgs(ft: string = ''): list<string>
     var filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
     filetype = get(RG_FILETYPE_MAP, filetype, filetype)
     var opts: list<string> = []
@@ -96,7 +96,7 @@ export def RgFileTypeOpts(ft: string = ''): list<string>
     return opts
 enddef
 
-export def GitFileTypeOpts(ft: string = ''): list<string>
+export def GitFileTypeArgs(ft: string = ''): list<string>
     var filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
     filetype = get(RG_FILETYPE_MAP, filetype, filetype)
     var opts: list<string> = []
@@ -115,18 +115,17 @@ export def GitFileTypeOpts(ft: string = ''): list<string>
     return opts
 enddef
 
-def DetectTool(): string
-    if stridx(getcmdprompt(), 'git') == 0 || stridx(&grepprg, 'git') == 0
+def DetectGrepTool(tool: string = ''): string
+    if tool == 'git' || stridx(getcmdprompt(), 'git') == 0 || stridx(&grepprg, 'git') == 0
         return 'git'
     endif
     return 'rg'
 enddef
 
-export def Opts(tool: string = ''): string
-    const grepprg = empty(tool) ? DetectTool() : tool
-    if grepprg ==# 'git'
-        return join(GitFileTypeOpts(), ' ')
+export def Args(tool: string = '', ft: string = ''): string
+    if DetectGrepTool(tool) ==# 'git'
+        return join(GitFileTypeArgs(ft), ' ')
     else
-        return join(RgFileTypeOpts(), ' ')
+        return join(RgFileTypeArgs(ft), ' ')
     endif
 enddef

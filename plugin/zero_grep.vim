@@ -14,8 +14,8 @@ import autoload 'zero_grep.vim' as ZeroGrep
 # ============================================================================
 # Functions
 # ============================================================================
-def! g:FileTypeOpts(...args: list<any>): string
-    return call(zero_grep#filetype#Opts, args)
+def! g:FileTypeArgs(...args: list<any>): string
+    return call(zero_grep#filetype#Args, args)
 enddef
 
 # ============================================================================
