@@ -102,7 +102,6 @@ enddef
 # ============================================================================
 # Context-Namespaced Escape Functions
 # ============================================================================
-
 # --- grep ---
 
 export def GrepEscapeText(text: string): string
@@ -110,23 +109,23 @@ export def GrepEscapeText(text: string): string
 enddef
 
 export def GrepCCword(): string
-    return GrepEscape(CCword())
+    return GrepEscape(zero_grep#CCword())
 enddef
 
 export def GrepCword(): string
-    return GrepEscape(Cword())
+    return GrepEscape(zero_grep#Cword())
 enddef
 
 export def GrepWord(): string
-    return GrepEscape(Word())
+    return GrepEscape(zero_grep#Word())
 enddef
 
 export def GrepVword(): string
-    return GrepEscape(Vword())
+    return GrepEscape(zero_grep#Vword())
 enddef
 
 export def GrepPword(): string
-    return GrepEscape(Pword())
+    return GrepEscape(zero_grep#Pword())
 enddef
 
 # --- substitute ---
@@ -136,24 +135,24 @@ export def SubstituteEscapeText(text: string): string
 enddef
 
 export def SubstituteCCword(): string
-    return '\<' .. Cword() .. '\>'
+    return '\<' .. zero_grep#Cword() .. '\>'
 enddef
 
 export def SubstituteCword(): string
-    return Cword()
+    return zero_grep#Cword()
 enddef
 
 export def SubstituteWord(): string
-    return SubstituteEscape(Word())
+    return SubstituteEscape(zero_grep#Word())
 enddef
 
 export def SubstituteVword(whole_word: bool = false): string
-    var t = SubstituteEscape(Vword())
+    var t = SubstituteEscape(zero_grep#Vword())
     return whole_word ? '\<' .. t .. '\>' : t
 enddef
 
 export def SubstitutePword(): string
-    return SubstituteEscape(Pword())
+    return SubstituteEscape(zero_grep#Pword())
 enddef
 
 # --- shell ---
@@ -163,23 +162,23 @@ export def ShellEscapeText(text: string): string
 enddef
 
 export def ShellCCword(): string
-    return shellescape(CCword())
+    return shellescape(zero_grep#CCword())
 enddef
 
 export def ShellCword(): string
-    return shellescape(Cword())
+    return shellescape(zero_grep#Cword())
 enddef
 
 export def ShellWord(): string
-    return ShellEscape(Word())
+    return ShellEscape(zero_grep#Word())
 enddef
 
 export def ShellVword(): string
-    return ShellEscape(trim(Vword()))
+    return ShellEscape(trim(zero_grep#Vword()))
 enddef
 
 export def ShellPword(): string
-    return ShellEscape(trim(Pword()))
+    return ShellEscape(trim(zero_grep#Pword()))
 enddef
 
 # --- leaderf ---
@@ -192,108 +191,120 @@ export def LeaderfEscapeText(text: string): string
 enddef
 
 export def LeaderfCCword(): string
-    return shellescape(CCword())
+    return shellescape(zero_grep#CCword())
 enddef
 
 export def LeaderfCword(): string
-    return shellescape(Cword())
+    return shellescape(zero_grep#Cword())
 enddef
 
 export def LeaderfWord(): string
-    return LeaderfEscape(Word())
+    return LeaderfEscape(zero_grep#Word())
 enddef
 
 export def LeaderfVword(): string
-    return LeaderfEscape(trim(Vword()))
+    return LeaderfEscape(trim(zero_grep#Vword()))
 enddef
 
 export def LeaderfPword(): string
-    return LeaderfEscape(trim(Pword()))
+    return LeaderfEscape(trim(zero_grep#Pword()))
+enddef
+
+export def FileTypeArgs(tool: string = '', ft: string = ''): string
+    return zero_grep#filetype#Args(tool, ft)
+enddef
+
+export def DumbJumpCword(ft: string = ''): string
+    return zero_grep#dumb_jump#Cword(ft)
+enddef
+
+export def DumbJumpCwordArgs(ft: string = ''): string
+    return zero_grep#dumb_jump#CwordArgs(ft)
 enddef
 
 # ============================================================================
 # Context-Aware Insert Functions (for <C-R>= mappings)
 # ============================================================================
 
+# Note: dumb_jump functions are called via autoload (zero_grep#dumb_jump#*)
+# because Vim9script import autoload cannot be used inside exported functions
+# that are themselves called from the command line at load time.
+
 export def InsertCCword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
-        return SubstituteCCword()
+        return zero_grep#SubstituteCCword()
     elseif IsGrepperGitCommand(cmd)
         return zero_grep#dumb_jump#GitCword()
     elseif IsGrepperCommand(cmd)
         return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
-        return GrepCCword()
+        return zero_grep#GrepCCword()
     elseif IsLeaderfCommand(cmd)
-        return LeaderfCCword()
+        return zero_grep#LeaderfCCword()
     else
-        return ShellCCword()
+        return zero_grep#ShellCCword()
     endif
 enddef
 
 export def InsertCword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
-        return SubstituteCword()
+        return zero_grep#SubstituteCword()
     elseif IsGrepperGitCommand(cmd)
         return zero_grep#dumb_jump#GitCword()
     elseif IsGrepperCommand(cmd)
         return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
-        return GrepCCword()
+        return zero_grep#GrepCCword()
     elseif IsLeaderfCommand(cmd)
-        return LeaderfCword()
+        return zero_grep#LeaderfCword()
     elseif IsInputCommand()
-        return ShellCword()
+        return zero_grep#ShellCword()
     else
-        return Cword()
+        return zero_grep#Cword()
     endif
 enddef
 
 export def InsertWord(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
-        return SubstituteWord()
+        return zero_grep#SubstituteWord()
     elseif IsGrepperGitCommand(cmd) || IsGrepperCommand(cmd)
         return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
-        return GrepWord()
+        return zero_grep#GrepWord()
     elseif IsLeaderfCommand(cmd)
-        return LeaderfWord()
+        return zero_grep#LeaderfWord()
     else
-        return ShellWord()
+        return zero_grep#ShellWord()
     endif
 enddef
-
-# Note: dumb_jump functions are called via autoload (zero_grep#dumb_jump#*)
-# because Vim9script import autoload cannot be used inside exported functions
-# that are themselves called from the command line at load time.
 
 export def InsertVword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
-        return SubstituteVword()
+        return zero_grep#SubstituteVword()
     elseif IsGrepCommand(cmd)
-        return GrepVword()
+        return zero_grep#GrepVword()
     elseif IsLeaderfCommand(cmd)
-        return LeaderfVword()
+        return zero_grep#LeaderfVword()
     elseif IsInputCommand()
-        return ShellVword()
+        return zero_grep#ShellVword()
     else
-        return Vword()
+        return zero_grep#Vword()
     endif
 enddef
 
 export def InsertPword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
-        return SubstitutePword()
+        return zero_grep#SubstitutePword()
     elseif IsGrepCommand(cmd)
-        return GrepPword()
+        return zero_grep#GrepPword()
     elseif IsLeaderfCommand(cmd)
-        return LeaderfPword()
+        return zero_grep#LeaderfPword()
     else
-        return ShellPword()
+        return zero_grep#ShellPword()
     endif
 enddef

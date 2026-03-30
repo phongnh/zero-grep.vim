@@ -59,19 +59,19 @@ end
 -- Raw Word Getters
 -- ============================================================================
 
-function M.CCword()
+function M.ccword()
   return "\\b" .. vim.fn.expand("<cword>") .. "\\b"
 end
 
-function M.Cword()
+function M.cword()
   return vim.fn.expand("<cword>")
 end
 
-function M.Word()
+function M.word()
   return vim.fn.expand("<cWORD>")
 end
 
-function M.Vword()
+function M.vword()
   local reg_save = vim.fn.getreg('"')
   local regtype_save = vim.fn.getregtype('"')
   vim.cmd("normal! gvy")
@@ -80,7 +80,7 @@ function M.Vword()
   return selection == "\n" and "" or selection
 end
 
-function M.Pword()
+function M.pword()
   local search = vim.fn.getreg("/")
   if search == "" or search == "\n" then
     return ""
@@ -98,24 +98,24 @@ function M.grep_escape(text)
   return grep_escape(text)
 end
 
-function M.grep_CCword()
-  return grep_escape(M.CCword())
+function M.grep_ccword()
+  return grep_escape(M.ccword())
 end
 
-function M.grep_Cword()
-  return grep_escape(M.Cword())
+function M.grep_cword()
+  return grep_escape(M.cword())
 end
 
-function M.grep_Word()
-  return grep_escape(M.Word())
+function M.grep_word()
+  return grep_escape(M.word())
 end
 
-function M.grep_Vword()
-  return grep_escape(M.Vword())
+function M.grep_vword()
+  return grep_escape(M.vword())
 end
 
-function M.grep_Pword()
-  return grep_escape(M.Pword())
+function M.grep_pword()
+  return grep_escape(M.pword())
 end
 
 -- substitute
@@ -124,25 +124,25 @@ function M.substitute_escape(text)
   return substitute_escape(text)
 end
 
-function M.substitute_CCword()
-  return "\\<" .. M.Cword() .. "\\>"
+function M.substitute_ccword()
+  return "\\<" .. M.cword() .. "\\>"
 end
 
-function M.substitute_Cword()
-  return M.Cword()
+function M.substitute_cword()
+  return M.cword()
 end
 
-function M.substitute_Word()
-  return substitute_escape(M.Word())
+function M.substitute_word()
+  return substitute_escape(M.word())
 end
 
-function M.substitute_Vword(whole_word)
-  local t = substitute_escape(M.Vword())
+function M.substitute_vword(whole_word)
+  local t = substitute_escape(M.vword())
   return whole_word and ("\\<" .. t .. "\\>") or t
 end
 
-function M.substitute_Pword()
-  return substitute_escape(M.Pword())
+function M.substitute_pword()
+  return substitute_escape(M.pword())
 end
 
 -- shell
@@ -151,53 +151,67 @@ function M.shell_escape(text)
   return shell_escape(text)
 end
 
-function M.shell_CCword()
-  return vim.fn.shellescape(M.CCword())
+function M.shell_ccword()
+  return vim.fn.shellescape(M.ccword())
 end
 
-function M.shell_Cword()
-  return vim.fn.shellescape(M.Cword())
+function M.shell_cword()
+  return vim.fn.shellescape(M.cword())
 end
 
-function M.shell_Word()
-  return shell_escape(M.Word())
+function M.shell_word()
+  return shell_escape(M.word())
 end
 
-function M.shell_Vword()
-  return shell_escape(vim.fn.trim(M.Vword()))
+function M.shell_vword()
+  return shell_escape(vim.fn.trim(M.vword()))
 end
 
-function M.shell_Pword()
-  return shell_escape(vim.fn.trim(M.Pword()))
+function M.shell_pword()
+  return shell_escape(vim.fn.trim(M.pword()))
 end
 
 -- leaderf
 -- LeaderF uses its own regex engine; escape chars include '"' in addition to
--- the shell set. CCword and Cword are passed as plain shellescape (no regex
+-- the shell set. ccword and cword are passed as plain shellescape (no regex
 -- boundaries) because LeaderF handles word matching internally.
 
 function M.leaderf_escape(text)
   return leaderf_escape(text)
 end
 
-function M.leaderf_CCword()
-  return vim.fn.shellescape(M.CCword())
+function M.leaderf_ccword()
+  return vim.fn.shellescape(M.ccword())
 end
 
-function M.leaderf_Cword()
-  return vim.fn.shellescape(M.Cword())
+function M.leaderf_cword()
+  return vim.fn.shellescape(M.cword())
 end
 
-function M.leaderf_Word()
-  return leaderf_escape(M.Word())
+function M.leaderf_word()
+  return leaderf_escape(M.word())
 end
 
-function M.leaderf_Vword()
-  return leaderf_escape(trim(M.Vword()))
+function M.leaderf_vword()
+  return leaderf_escape(trim(M.vword()))
 end
 
-function M.leaderf_Pword()
-  return leaderf_escape(trim(M.Pword()))
+function M.leaderf_pword()
+  return leaderf_escape(trim(M.pword()))
+end
+
+-- file type
+function M.file_type_args(tool, ft)
+  return require("zero_grep.filetype").args(tool, ft)
+end
+
+-- dumb_jump
+function M.dumb_jump_cword(ft)
+  return require("zero_grep.dumb_jump").cword(ft)
+end
+
+function M.dumb_jump_cword_args(ft)
+  return require("zero_grep.dumb_jump").cword(ft)
 end
 
 -- ============================================================================
@@ -240,91 +254,82 @@ end
 -- Context-Aware Insert Functions (for <C-R>= mappings)
 -- ============================================================================
 
-local dumb_jump -- lazy-loaded to avoid circular require
-
-local function get_dumb_jump()
-  if not dumb_jump then
-    dumb_jump = require("zero_grep.dumb_jump")
-  end
-  return dumb_jump
-end
-
-function M.insert_CCword()
+function M.insert_ccword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
-    return M.substitute_CCword()
+    return M.substitute_ccword()
   elseif is_grepper_git_command(cmd) then
-    return get_dumb_jump().git_Cword()
+    return M.dumb_jump_cword()
   elseif is_grepper_command(cmd) then
-    return get_dumb_jump().rg_Cword()
+    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
-    return M.grep_CCword()
+    return M.grep_ccword()
   elseif is_leaderf_command(cmd) then
-    return M.leaderf_CCword()
+    return M.leaderf_ccword()
   else
-    return M.shell_CCword()
+    return M.shell_ccword()
   end
 end
 
-function M.insert_Cword()
+function M.insert_cword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
-    return M.substitute_Cword()
+    return M.substitute_cword()
   elseif is_grepper_git_command(cmd) then
-    return get_dumb_jump().git_Cword()
+    return M.dumb_jump_cword()
   elseif is_grepper_command(cmd) then
-    return get_dumb_jump().rg_Cword()
+    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
-    return M.grep_CCword()
+    return M.grep_ccword()
   elseif is_leaderf_command(cmd) then
-    return M.leaderf_Cword()
+    return M.leaderf_cword()
   elseif is_input_command() then
-    return M.shell_Cword()
+    return M.shell_cword()
   else
-    return M.Cword()
+    return M.cword()
   end
 end
 
-function M.insert_Word()
+function M.insert_word()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
-    return M.substitute_Word()
+    return M.substitute_word()
   elseif is_grepper_git_command(cmd) or is_grepper_command(cmd) then
-    return get_dumb_jump().rg_Cword()
+    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
-    return M.grep_Word()
+    return M.grep_word()
   elseif is_leaderf_command(cmd) then
-    return M.leaderf_Word()
+    return M.leaderf_word()
   else
-    return M.shell_Word()
+    return M.shell_word()
   end
 end
 
-function M.insert_Vword()
+function M.insert_vword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
-    return M.substitute_Vword()
+    return M.substitute_vword()
   elseif is_grep_command(cmd) then
-    return M.grep_Vword()
+    return M.grep_vword()
   elseif is_leaderf_command(cmd) then
-    return M.leaderf_Vword()
+    return M.leaderf_vword()
   elseif is_input_command() then
-    return M.shell_Vword()
+    return M.shell_vword()
   else
-    return M.Vword()
+    return M.vword()
   end
 end
 
-function M.insert_Pword()
+function M.insert_pword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
-    return M.substitute_Pword()
+    return M.substitute_pword()
   elseif is_grep_command(cmd) then
-    return M.grep_Pword()
+    return M.grep_pword()
   elseif is_leaderf_command(cmd) then
-    return M.leaderf_Pword()
+    return M.leaderf_pword()
   else
-    return M.shell_Pword()
+    return M.shell_pword()
   end
 end
 

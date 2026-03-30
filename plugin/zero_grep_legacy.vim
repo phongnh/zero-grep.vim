@@ -25,6 +25,14 @@ function! g:DumbJumpCwordArgs(...) abort
     return zero_grep#legacy#dumb_jump#CwordArgs(...)
 endfunction
 
+function! g:CCword() abort
+    return zero_grep#legacy#CCword()
+endfunction
+
+function! g:Cword() abort
+    return zero_grep#legacy#Cword()
+endfunction
+
 function! g:Word() abort
     return zero_grep#legacy#Word()
 endfunction
@@ -35,6 +43,14 @@ endfunction
 
 function! g:Pword() abort
     return zero_grep#legacy#Pword()
+endfunction
+
+function! g:ShellCCword() abort
+    return zero_grep#legacy#ShellCCword()
+endfunction
+
+function! g:ShellCword() abort
+    return zero_grep#legacy#ShellCword()
 endfunction
 
 function! g:ShellWord() abort

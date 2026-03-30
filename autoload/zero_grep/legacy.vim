@@ -38,11 +38,10 @@ function! zero_grep#legacy#Word() abort
 endfunction
 
 function! zero_grep#legacy#Vword() range abort
-    let l:reg_save     = @"
-    let l:regtype_save = getregtype('"')
-    normal! gvy
+    let l:saved = @"
+    silent execute 'normal! ""gvy'
     let l:selection = @"
-    call setreg('"', l:reg_save, l:regtype_save)
+    let @" = l:saved
     return l:selection ==# "\n" ? '' : l:selection
 endfunction
 
