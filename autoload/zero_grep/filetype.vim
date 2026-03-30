@@ -3,11 +3,10 @@ vim9script
 # autoload/zero_grep/filetype.vim - Filetype-aware rg/git grep helpers (Vim9script)
 # Maintainer: Phong Nguyen
 #
-# Wraps word getters with rg -t / git grep -- glob filetype filtering.
-# Filetype data and opts builders live in zero_grep#dumb_jump#.
+# Fieltype opts builder with rg -t / git grep -- glob filetype filtering.
 
 # rg --type-list
-var RG_FILETYPES: dict<list<string>> = {
+const RG_FILETYPES: dict<list<string>> = {
     'c':             ['*.[chH]', '*.[chH].in', '*.cats'],
     'cmake':         ['*.cmake', 'CMakeLists.txt'],
     'config':        ['*.cfg', '*.conf', '*.config', '*.ini'],
@@ -74,7 +73,7 @@ var RG_FILETYPES: dict<list<string>> = {
 # Map vim filetype to rg filetype
 # - key: vim filetype 
 # - value: rg filetype
-var RG_FILETYPE_MAP: dict<string> = {
+const RG_FILETYPE_MAP: dict<string> = {
     'python':          'py',
     'javascript':      'js',
     'javascriptreact': 'js',
@@ -89,7 +88,7 @@ export def RgFileTypeOpts(ft: string = ''): list<string>
     if !empty(filetype) && has_key(RG_FILETYPES, filetype)
         opts->add('-t ' .. filetype)
     else
-        var ext = expand('%:e')
+        const ext = expand('%:e')
         if !empty(ext)
             opts->add('-g ' .. shellescape(printf('*.{%s}', ext)))
         endif
@@ -107,7 +106,7 @@ export def GitFileTypeOpts(ft: string = ''): list<string>
             opts->add(shellescape(glob))
         endfor
     else
-        var ext = expand('%:e')
+        const ext = expand('%:e')
         if !empty(ext)
             opts->add('--')
             opts->add(shellescape(printf('*.{%s}', ext)))
