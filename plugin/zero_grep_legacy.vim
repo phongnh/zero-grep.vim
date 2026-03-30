@@ -25,16 +25,29 @@ function! g:DumbJumpCwordArgs(...) abort
     return zero_grep#legacy#dumb_jump#CwordArgs(...)
 endfunction
 
-" ============================================================================
-" Commands
-" ============================================================================
+function! g:Word() abort
+    return zero_grep#legacy#Word()
+endfunction
 
-" Raw word getters
-command! ZeroGrepCCword         echo zero_grep#legacy#CCword()
-command! ZeroGrepCword          echo zero_grep#legacy#Cword()
-command! ZeroGrepWord           echo zero_grep#legacy#Word()
-command! -range ZeroGrepVword   echo zero_grep#legacy#Vword()
-command! ZeroGrepPword          echo zero_grep#legacy#Pword()
+function! g:Vword() abort
+    return zero_grep#legacy#Vword()
+endfunction
+
+function! g:Pword() abort
+    return zero_grep#legacy#Pword()
+endfunction
+
+function! g:ShellWord() abort
+    return zero_grep#legacy#ShellWord()
+endfunction
+
+function! g:ShellVword() abort
+    return zero_grep#legacy#ShellVword()
+endfunction
+
+function! g:ShellPword() abort
+    return zero_grep#legacy#ShellPword()
+endfunction
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo

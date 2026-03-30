@@ -9,8 +9,6 @@ vim9script
 
 g:loaded_zero_grep = 1
 
-import autoload 'zero_grep.vim' as ZeroGrep
-
 # ============================================================================
 # Functions
 # ============================================================================
@@ -26,20 +24,26 @@ def! g:DumbJumpCwordArgs(...args: list<any>): string
     return call(zero_grep#dumb_jump#CwordArgs, args)
 enddef
 
-# ============================================================================
-# Commands
-# ============================================================================
+def! g:Word(): string
+    return zero_grep#Word()
+enddef
 
-# Raw word getters
-command! ZeroGrepCCword         echo ZeroGrep.CCword()
-command! ZeroGrepCword          echo ZeroGrep.Cword()
-command! ZeroGrepWord           echo ZeroGrep.Word()
-command! -range ZeroGrepVword   echo ZeroGrep.Vword()
-command! ZeroGrepPword          echo ZeroGrep.Pword()
+def! g:Vword(): string
+    return zero_grep#Vword()
+enddef
 
-# Context-aware insert helpers (for use in <C-R>= mappings)
-command! ZeroGrepInsertCCword   <C-R>=ZeroGrep.InsertCCword()<CR>
-command! ZeroGrepInsertCword    <C-R>=ZeroGrep.InsertCword()<CR>
-command! ZeroGrepInsertWord     <C-R>=ZeroGrep.InsertWord()<CR>
-command! ZeroGrepInsertVword    <C-R>=ZeroGrep.InsertVword()<CR>
-command! ZeroGrepInsertPword    <C-R>=ZeroGrep.InsertPword()<CR>
+def! g:Pword(): string
+    return zero_grep#Pword()
+enddef
+
+def! g:ShellWord(): string
+    return zero_grep#ShellWord()
+enddef
+
+def! g:ShellVword(): string
+    return zero_grep#ShellVword()
+enddef
+
+def! g:ShellPword(): string
+    return zero_grep#ShellPword()
+enddef
