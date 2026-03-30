@@ -72,12 +72,17 @@ function M.word()
 end
 
 function M.vword()
-  local reg_save = vim.fn.getreg('"')
-  local regtype_save = vim.fn.getregtype('"')
-  vim.cmd([[normal! ""gvy]])
-  local selection = vim.fn.getreg('"')
-  vim.fn.setreg('"', reg_save, regtype_save)
-  return selection == "\n" and "" or selection:gsub("\\n+$", "")
+  if vim.fn.exists("*getregion") == 1 then
+    local lines = vim.fn.getregion(vim.fn.getpos("'<"), vim.fn.getpos("'>"))
+    return vim.trim(#lines > 0 and lines[1] or "")
+  end
+  local line = vim.fn.getline("'<")
+  local _b1, l1, c1, _o1 = unpack(vim.fn.getpos("'<"))
+  local _b2, l2, c2, _o2 = unpack(vim.fn.getpos("'>"))
+  if l1 ~= l2 then
+    return vim.trim(line:sub(c1))
+  end
+  return vim.trim(line:sub(c1, c2))
 end
 
 function M.pword()
