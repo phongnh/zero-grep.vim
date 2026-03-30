@@ -1,7 +1,7 @@
 " autoload/zero_grep/filetype.vim - Filetype-aware rg/git grep helpers (Legacy Vim)
 " Maintainer: Phong Nguyen
 "
-" Fieltype opts builder with rg -t / git grep -- glob filetype filtering.
+" Fieltype args builder with rg -t / git grep -- glob filetype filtering.
 
 " rg --type-list
 let s:rg_filetypes = {
@@ -69,7 +69,7 @@ let s:rg_filetypes = {
             \ }
 
 " Map vim filetype to rg filetype
-" - key: vim filetype 
+" - key: vim filetype
 " - value: rg filetype
 let s:rg_filetype_mappings = {
             \ 'python':          'py',
@@ -79,55 +79,56 @@ let s:rg_filetype_mappings = {
             \ 'typescriptreact': 'ts',
             \ }
 
-function! zero_grep#legacy#filetype#RgFileTypeOpts(...) abort
+function! zero_grep#legacy#filetype#RgFileTypeArgs(...) abort
     let l:ft = get(a:, 1, '')
     let l:ft = empty(l:ft) ? (&filetype !=# '' ? &filetype : &buftype) : l:ft
     let l:ft = get(s:rg_filetype_mappings, l:ft, l:ft)
-    let l:opts = []
+    let l:args = []
     if !empty(l:ft) && has_key(s:rg_filetypes, l:ft)
-        call add(l:opts, '-t ' .. l:ft)
+        call add(l:args, '-t ' .. l:ft)
     else
         let l:ext = expand('%:e')
         if !empty(l:ext)
-            call add(l:opts, '-g ' .. shellescape(printf('*.{%s}', l:ext)))
+            call add(l:args, '-g ' .. shellescape(printf('*.{%s}', l:ext)))
         endif
     endif
-    return l:opts
+    return l:args
 endfunction
 
-function! zero_grep#legacy#filetype#GitFileTypeOpts(...) abort
+function! zero_grep#legacy#filetype#GitFileTypeArgs(...) abort
     let l:ft = get(a:, 1, '')
     let l:ft = empty(l:ft) ? (&filetype !=# '' ? &filetype : &buftype) : l:ft
     let l:ft = get(s:rg_filetype_mappings, l:ft, l:ft)
-    let l:opts = []
+    let l:args = []
     if !empty(l:ft) && has_key(s:rg_filetypes, l:ft)
-        call add(l:opts, '--')
+        call add(l:args, '--')
         for l:ext in s:rg_filetypes[l:ft]
-            call add(l:opts, shellescape(l:ext))
+            call add(l:args, shellescape(l:ext))
         endfor
     else
         let l:ext = expand('%:e')
         if !empty(l:ext)
-            call add(l:opts, '--')
-            call add(l:opts, shellescape(printf('*.{%s}', l:ext)))
+            call add(l:args, '--')
+            call add(l:args, shellescape(printf('*.{%s}', l:ext)))
         endif
     endif
-    return l:opts
+    return l:args
 endfunction
 
-function! s:detect_tool() abort
-    if stridx(getcmdprompt(), 'git') == 0 || stridx(&grepprg, 'git') == 0
+function! s:detect_grep_tool(...) abort
+    let l:tool = get(a:, 1, '')
+    if l:tool ==# 'git' || stridx(getcmdprompt(), 'git') == 0 || stridx(&grepprg, 'git') == 0
         return 'git'
     endif
     return 'rg'
 endfunction
 
-function! zero_grep#legacy#filetype#Opts(...) abort
+function! zero_grep#legacy#filetype#Args(...) abort
     let l:tool = get(a:, 1, '')
-    let l:grepprg = empty(l:tool) ? s:detect_tool() : l:tool
-    if l:grepprg ==# 'git'
-        return join(zero_grep#legacy#filetype#GitFileTypeOpts(), ' ')
+    let l:ft = get(a:, 2, '')
+    if s:detect_grep_tool(l:tool) ==# 'git'
+        return join(zero_grep#legacy#filetype#GitFileTypeArgs(l:ft), ' ')
     else
-        return join(zero_grep#legacy#filetype#RgFileTypeOpts(), ' ')
+        return join(zero_grep#legacy#filetype#RgFileTypeArgs(l:ft), ' ')
     endif
 endfunction

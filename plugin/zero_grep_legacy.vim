@@ -13,8 +13,8 @@ set cpoptions&vim
 " ============================================================================
 " Functions
 " ============================================================================
-function! g:FileTypeOpts(...) abort
-    return zero_grep#legacy#filetype#Opts(...)
+function! g:FileTypeArgs(...) abort
+    return zero_grep#legacy#filetype#Args(...)
 endfunction
 
 " ============================================================================
