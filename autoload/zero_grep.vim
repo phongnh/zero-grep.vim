@@ -29,16 +29,15 @@ export def Word(): string
 enddef
 
 export def Vword(): string
-    var reg_save     = @"
-    var regtype_save = getregtype('"')
-    normal! gvy
-    var selection = @"
-    setreg('"', reg_save, regtype_save)
-    return selection ==# "\n" ? '' : selection
+    const saved = @"
+    silent execute 'normal! ""gvy'
+    const selection = @"
+    @" = saved
+    return selection ==# "\n" ? '' : substitute(selection, '\n\+$', '', 'g')
 enddef
 
 export def Pword(): string
-    var search = @/
+    const search = @/
     if empty(search) || search ==# "\n"
         return ''
     endif

@@ -42,7 +42,7 @@ function! zero_grep#legacy#Vword() range abort
     silent execute 'normal! ""gvy'
     let l:selection = @"
     let @" = l:saved
-    return l:selection ==# "\n" ? '' : l:selection
+    return l:selection ==# "\n" ? '' : substitute(l:selection, '\n\+$', '', 'g')
 endfunction
 
 function! zero_grep#legacy#Pword() abort

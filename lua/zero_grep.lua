@@ -74,10 +74,10 @@ end
 function M.vword()
   local reg_save = vim.fn.getreg('"')
   local regtype_save = vim.fn.getregtype('"')
-  vim.cmd("normal! gvy")
+  vim.cmd([[normal! ""gvy]])
   local selection = vim.fn.getreg('"')
   vim.fn.setreg('"', reg_save, regtype_save)
-  return selection == "\n" and "" or selection
+  return selection == "\n" and "" or selection:gsub("\\n+$", "")
 end
 
 function M.pword()
