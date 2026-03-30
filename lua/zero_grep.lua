@@ -55,10 +55,6 @@ local function leaderf_escape(text)
   return vim.fn.shellescape(vim_escape(text, LEADERF_ESCAPE_CHARS))
 end
 
-local function trim(str)
-  return vim.fn.trim(str)
-end
-
 -- ============================================================================
 -- Raw Word Getters
 -- ============================================================================
@@ -168,11 +164,11 @@ function M.shell_Word()
 end
 
 function M.shell_Vword()
-  return shell_escape(trim(M.Vword()))
+  return shell_escape(vim.fn.trim(M.Vword()))
 end
 
 function M.shell_Pword()
-  return shell_escape(trim(M.Pword()))
+  return shell_escape(vim.fn.trim(M.Pword()))
 end
 
 -- leaderf

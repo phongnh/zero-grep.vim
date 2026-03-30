@@ -10,12 +10,7 @@ local PLACEHOLDER = "KEYWORD"
 
 -- stylua: ignore
 local DEFINITIONS = {
-  c = {
-    "\\bKEYWORD(\\s|\\))*\\((\\w|[,&*.<>:]|\\s)*(\\))\\s*(const|->|\\{|$)|typedef\\s+(\\w|[(*]|\\s)+KEYWORD(\\)|\\s)*\\(",
-    "\\b(?!(class\\b|struct\\b|return\\b|else\\b|delete\\b))(\\w+|[,>])([*&]|\\s)+KEYWORD\\s*(\\[(\\d|\\s)*\\])*\\s*([=,(){;]|:\\s*\\d)|#define\\s+KEYWORD\\b",
-    "\\b(class|struct|enum|union)\\b\\s*KEYWORD\\b\\s*(final\\s*)?(:(([\\s*\\w+\\s*::]*\\s*\\w*\\s*<?[\\s*\\w+\\s*::]*\\w+>?\\s*,*)+))?((\\{|$))|\\}\\s*KEYWORD\\b\\s*;",
-  },
-  cpp = {
+  ["c++"] = {
     "\\bKEYWORD(\\s|\\))*\\((\\w|[,&*.<>:]|\\s)*(\\))\\s*(const|->|\\{|$)|typedef\\s+(\\w|[(*]|\\s)+KEYWORD(\\)|\\s)*\\(",
     "\\b(?!(class\\b|struct\\b|return\\b|else\\b|delete\\b))(\\w+|[,>])([*&]|\\s)+KEYWORD\\s*(\\[(\\d|\\s)*\\])*\\s*([=,(){;]|:\\s*\\d)|#define\\s+KEYWORD\\b",
     "\\b(class|struct|enum|union)\\b\\s*KEYWORD\\b\\s*(final\\s*)?(:(([\\s*\\w+\\s*::]*\\s*\\w*\\s*<?[\\s*\\w+\\s*::]*\\w+>?\\s*,*)+))?((\\{|$))|\\}\\s*KEYWORD\\b\\s*;",
@@ -90,17 +85,9 @@ local DEFINITIONS = {
     "\\bKEYWORD\\s*:\\s*function\\s*\\(",
     "\\bKEYWORD\\s*=\\s*function\\s*\\(",
   },
-  javascriptreact = {
-    "(service|factory)\\(['\"]KEYWORD['\"]",
-    "\\bKEYWORD\\s*[=:]\\s*\\([^\\)]*\\)\\s+=>",
-    "\\bKEYWORD\\s*\\([^()]*\\)\\s*[{]",
-    "class\\s*KEYWORD\\s*[\\(\\{]",
-    "class\\s*KEYWORD\\s+extends",
-    "\\s*\\bKEYWORD\\s*=[^=\\n]+",
-    "\\bfunction\\b[^\\(]*\\(\\s*[^\\)]*\\bKEYWORD\\b\\s*,?\\s*\\)?",
-    "function\\s*KEYWORD\\s*\\(",
-    "\\bKEYWORD\\s*:\\s*function\\s*\\(",
-    "\\bKEYWORD\\s*=\\s*function\\s*\\(",
+  hcl = {
+    "(variable|output|module)\\s*\"KEYWORD\"\\s*\\{",
+    "(data|resource)\\s*\"\\w+\"\\s*\"KEYWORD\"\\s*\\{",
   },
   typescript = {
     "(service|factory)\\(['\"]KEYWORD['\"]",
@@ -118,27 +105,6 @@ local DEFINITIONS = {
     "\\bKEYWORD\\s*=\\s*function\\s*\\(",
     "\\s*\\bKEYWORD\\s*=[^=\\n]+",
     "\\bfunction\\b[^\\(]*\\(\\s*[^\\)]*\\bKEYWORD\\b\\s*,?\\s*\\)?",
-  },
-  typescriptreact = {
-    "(service|factory)\\(['\"]KEYWORD['\"]",
-    "\\bKEYWORD\\s*[=:]\\s*\\([^\\)]*\\)\\s+=>",
-    "\\bKEYWORD\\s*\\([^()]*\\)\\s*[{]",
-    "class\\s*KEYWORD(\\s*<[^>]*>)?\\s*[\\(\\{]",
-    "class\\s*KEYWORD(\\s*<[^>]*>)?\\s+extends",
-    "(export\\s+)?interface\\s+KEYWORD\\b",
-    "(export\\s+)?type\\s+KEYWORD\\b",
-    "(export\\s+)?enum\\s+KEYWORD\\b",
-    "(declare\\s+)?namespace\\s+KEYWORD\\b",
-    "(export\\s+)?module\\s+KEYWORD\\b",
-    "function\\s*KEYWORD\\s*\\(",
-    "\\bKEYWORD\\s*:\\s*function\\s*\\(",
-    "\\bKEYWORD\\s*=\\s*function\\s*\\(",
-    "\\s*\\bKEYWORD\\s*=[^=\\n]+",
-    "\\bfunction\\b[^\\(]*\\(\\s*[^\\)]*\\bKEYWORD\\b\\s*,?\\s*\\)?",
-  },
-  hcl = {
-    "(variable|output|module)\\s*\"KEYWORD\"\\s*\\{",
-    "(data|resource)\\s*\"\\w+\"\\s*\"KEYWORD\"\\s*\\{",
   },
   lua = {
     "\\s*\\bKEYWORD\\s*=[^=\\n]+",
@@ -190,50 +156,45 @@ local DEFINITIONS = {
     "message\\s+KEYWORD\\s*\\{",
     "enum\\s+KEYWORD\\s*\\{",
   },
-}
-
--- stylua: ignore
-local RG_FILETYPES = {
-  c        = { "*.[chH]", "*.[chH].in", "*.cats" },
-  cpp      = { "*.[ChH]", "*.[ChH].in", "*.[ch]pp", "*.[ch]pp.in", "*.[ch]xx", "*.[ch]xx.in", "*.cc", "*.cc.in", "*.hh", "*.hh.in", "*.inl" },
-  crystal  = { "*.cr", "*.ecr", "Projectfile", "shard.yml" },
-  css      = { "*.css", "*.scss" },
-  dart     = { "*.dart" },
-  elixir   = { "*.eex", "*.ex", "*.exs", "*.heex", "*.leex", "*.livemd" },
-  erlang   = { "*.erl", "*.hrl" },
-  fennel   = { "*.fnl" },
-  go       = { "*.go" },
-  hcl      = { "*.hcl", "*.tf", "*.tfvars" },
-  html     = { "*.ejs", "*.htm", "*.html" },
-  js       = { "*.cjs", "*.js", "*.jsx", "*.mjs", "*.vue" },
-  json     = { "*.json", "*.sarif", "composer.lock" },
-  lua      = { "*.lua" },
-  make     = { "*.mak", "*.mk", "Makefile.*", "[Mm]akefile", "[Mm]akefile.am", "[Mm]akefile.in" },
-  markdown = { "*.markdown", "*.md", "*.mdown", "*.mdwn", "*.mdx", "*.mkd", "*.mkdn" },
-  protobuf = { "*.proto" },
-  py       = { "*.py", "*.pyi" },
-  ruby     = { "*.gemspec", "*.rake", "*.rb", "*.rbw", ".irbrc", "Gemfile", "Rakefile", "config.ru" },
-  rust     = { "*.rs" },
-  sh       = { "*.bash", "*.bashrc", "*.env", "*.ksh", "*.sh", "*.zsh", ".bashrc", ".profile", ".zshrc" },
-  sql      = { "*.psql", "*.sql" },
-  tf       = { "*.terraform.lock.hcl", "*.tf", "*.tfvars" },
-  toml     = { "*.toml", "Cargo.lock" },
-  ts       = { "*.cts", "*.mts", "*.ts", "*.tsx" },
-  vim      = { "*.vim", ".vimrc", "vimrc" },
-  xml      = { "*.dtd", "*.rng", "*.xhtml", "*.xml", "*.xsd", "*.xsl", "*.xslt" },
-  yaml     = { "*.yaml", "*.yml" },
-  zig      = { "*.zig" },
-}
-
-local RG_FILETYPE_MAP = {
-  javascript = "js",
-  javascriptreact = "js",
-  typescript = "ts",
-  typescriptreact = "ts",
-  python = "py",
-  sh = "sh",
-  bash = "sh",
-  zsh = "sh",
+  c = {
+    "\\bKEYWORD(\\s|\\))*\\((\\w|[,&*.<>:]|\\s)*(\\))\\s*(const|->|\\{|$)|typedef\\s+(\\w|[(*]|\\s)+KEYWORD(\\)|\\s)*\\(",
+    "\\b(?!(class\\b|struct\\b|return\\b|else\\b|delete\\b))(\\w+|[,>])([*&]|\\s)+KEYWORD\\s*(\\[(\\d|\\s)*\\])*\\s*([=,(){;]|:\\s*\\d)|#define\\s+KEYWORD\\b",
+    "\\b(class|struct|enum|union)\\b\\s*KEYWORD\\b\\s*(final\\s*)?(:(([\\s*\\w+\\s*::]*\\s*\\w*\\s*<?[\\s*\\w+\\s*::]*\\w+>?\\s*,*)+))?((\\{|$))|\\}\\s*KEYWORD\\b\\s*;",
+  },
+  cpp = {
+    "\\bKEYWORD(\\s|\\))*\\((\\w|[,&*.<>:]|\\s)*(\\))\\s*(const|->|\\{|$)|typedef\\s+(\\w|[(*]|\\s)+KEYWORD(\\)|\\s)*\\(",
+    "\\b(?!(class\\b|struct\\b|return\\b|else\\b|delete\\b))(\\w+|[,>])([*&]|\\s)+KEYWORD\\s*(\\[(\\d|\\s)*\\])*\\s*([=,(){;]|:\\s*\\d)|#define\\s+KEYWORD\\b",
+    "\\b(class|struct|enum|union)\\b\\s*KEYWORD\\b\\s*(final\\s*)?(:(([\\s*\\w+\\s*::]*\\s*\\w*\\s*<?[\\s*\\w+\\s*::]*\\w+>?\\s*,*)+))?((\\{|$))|\\}\\s*KEYWORD\\b\\s*;",
+  },
+  javascriptreact = {
+    "(service|factory)\\(['\"]KEYWORD['\"]",
+    "\\bKEYWORD\\s*[=:]\\s*\\([^\\)]*\\)\\s+=>",
+    "\\bKEYWORD\\s*\\([^()]*\\)\\s*[{]",
+    "class\\s*KEYWORD\\s*[\\(\\{]",
+    "class\\s*KEYWORD\\s+extends",
+    "\\s*\\bKEYWORD\\s*=[^=\\n]+",
+    "\\bfunction\\b[^\\(]*\\(\\s*[^\\)]*\\bKEYWORD\\b\\s*,?\\s*\\)?",
+    "function\\s*KEYWORD\\s*\\(",
+    "\\bKEYWORD\\s*:\\s*function\\s*\\(",
+    "\\bKEYWORD\\s*=\\s*function\\s*\\(",
+  },
+  typescriptreact = {
+    "(service|factory)\\(['\"]KEYWORD['\"]",
+    "\\bKEYWORD\\s*[=:]\\s*\\([^\\)]*\\)\\s+=>",
+    "\\bKEYWORD\\s*\\([^()]*\\)\\s*[{]",
+    "class\\s*KEYWORD(\\s*<[^>]*>)?\\s*[\\(\\{]",
+    "class\\s*KEYWORD(\\s*<[^>]*>)?\\s+extends",
+    "(export\\s+)?interface\\s+KEYWORD\\b",
+    "(export\\s+)?type\\s+KEYWORD\\b",
+    "(export\\s+)?enum\\s+KEYWORD\\b",
+    "(declare\\s+)?namespace\\s+KEYWORD\\b",
+    "(export\\s+)?module\\s+KEYWORD\\b",
+    "function\\s*KEYWORD\\s*\\(",
+    "\\bKEYWORD\\s*:\\s*function\\s*\\(",
+    "\\bKEYWORD\\s*=\\s*function\\s*\\(",
+    "\\s*\\bKEYWORD\\s*=[^=\\n]+",
+    "\\bfunction\\b[^\\(]*\\(\\s*[^\\)]*\\bKEYWORD\\b\\s*,?\\s*\\)?",
+  },
 }
 
 -- ============================================================================
@@ -260,6 +221,8 @@ local function build_pattern(keyword, ft)
     table.insert(patterns, "(" .. pat .. ")")
   end
   if #patterns > 0 then
+    -- table.insert(patterns, "(\\b" .. keyword .. "\b)")
+    -- return vim.fn.shellescape("(" .. table.concat(patterns, "|") .. ")")
     return '"(' .. table.concat(patterns, "|") .. ')"'
   end
   return vim.fn.shellescape("\\b" .. keyword .. "\\b")
@@ -268,47 +231,14 @@ end
 local function build_pattern_args(keyword, ft)
   local args = {}
   for _, regex in ipairs(get_regexes(ft)) do
-    local pat = regex:gsub(PLACEHOLDER, keyword)
-    table.insert(args, "-e " .. vim.fn.shellescape(pat))
+    local pattern = regex:gsub(PLACEHOLDER, keyword)
+    table.insert(args, "-e " .. vim.fn.shellescape(pattern))
   end
   if #args > 0 then
+    -- table.insert(args, "-e " .. string.format("'\\b%s\\b'", keyword))
     return table.concat(args, " ")
   end
   return string.format("'\\b%s\\b'", keyword)
-end
-
-local function rg_filetype_opts(ft)
-  local filetype = get_filetype(ft)
-  filetype = RG_FILETYPE_MAP[filetype] or filetype
-  local opts = {}
-  if filetype ~= "" and RG_FILETYPES[filetype] then
-    table.insert(opts, "-t " .. filetype)
-  else
-    local ext = vim.fn.expand("%:e")
-    if ext ~= "" then
-      table.insert(opts, "-g " .. vim.fn.shellescape(string.format("*.{%s}", ext)))
-    end
-  end
-  return opts
-end
-
-local function git_filetype_opts(ft)
-  local filetype = get_filetype(ft)
-  filetype = RG_FILETYPE_MAP[filetype] or filetype
-  local opts = {}
-  if filetype ~= "" and RG_FILETYPES[filetype] then
-    table.insert(opts, "--")
-    for _, glob in ipairs(RG_FILETYPES[filetype]) do
-      table.insert(opts, vim.fn.shellescape(glob))
-    end
-  else
-    local ext = vim.fn.expand("%:e")
-    if ext ~= "" then
-      table.insert(opts, "--")
-      table.insert(opts, vim.fn.shellescape(string.format("*.{%s}", ext)))
-    end
-  end
-  return opts
 end
 
 -- ============================================================================
@@ -317,41 +247,13 @@ end
 
 --- Returns the compiled dumb-jump PCRE pattern for <cword>.
 --- Format: "(pat1|pat2|...)" ready to pass to rg -P / git grep -P
-function M.Cword(ft)
+function M.cword(ft)
   return build_pattern(vim.fn.expand("<cword>"), ft)
 end
 
 --- Returns multiple -e args for grep -E (no PCRE required)
-function M.CwordArgs(ft)
+function M.cword_args(ft)
   return build_pattern_args(vim.fn.expand("<cword>"), ft)
-end
-
---- rg: -s -t <type> "(patterns)"
-function M.rg_Cword(ft)
-  local type_opts = table.concat(rg_filetype_opts(ft), " ")
-  local pattern = M.Cword(ft)
-  if type_opts ~= "" then
-    return "-s " .. type_opts .. " " .. pattern
-  end
-  return "-s " .. pattern
-end
-
---- git grep: "(patterns)" -- '*.ext' ...
-function M.git_Cword(ft)
-  local file_opts = table.concat(git_filetype_opts(ft), " ")
-  local pattern = M.Cword(ft)
-  if file_opts ~= "" then
-    return pattern .. " " .. file_opts
-  end
-  return pattern
-end
-
-function M.rg_filetype_args(ft)
-  return table.concat(rg_filetype_opts(ft), " ")
-end
-
-function M.git_filetype_args(ft)
-  return table.concat(git_filetype_opts(ft), " ")
 end
 
 return M

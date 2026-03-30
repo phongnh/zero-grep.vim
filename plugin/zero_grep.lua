@@ -6,31 +6,48 @@ if not vim.fn.has("nvim") or vim.g.loaded_zero_grep then
 end
 vim.g.loaded_zero_grep = 1
 
-local zero_grep = require("zero_grep")
-
-zero_grep.setup()
+require("zero_grep").setup()
 
 -- ============================================================================
--- Commands
+-- Functions
 -- ============================================================================
+vim.cmd([[
+function! g:FileTypeArgs(...) abort
+    let l:tool = get(a:, 1, '')
+    return v:lua.require("zero_grep.filetype").args(l:tool)
+endfunction
 
--- Raw word getters
-vim.api.nvim_create_user_command("ZeroGrepCCword", function()
-  print(zero_grep.CCword())
-end, {})
+function! g:DumbJumpCword(...) abort
+    let l:lf = get(a:, 1, '')
+    return v:lua.require("zero_grep.dumb_jump").cword(l:ft)
+endfunction
 
-vim.api.nvim_create_user_command("ZeroGrepCword", function()
-  print(zero_grep.Cword())
-end, {})
+function! g:DumbJumpCwordArgs(...) abort
+    let l:lf = get(a:, 1, '')
+    return v:lua.require("zero_grep.dumb_jump").cword_args(l:ft)
+endfunction
 
-vim.api.nvim_create_user_command("ZeroGrepWord", function()
-  print(zero_grep.Word())
-end, {})
+function! g:Word() abort
+    return v:lua.require("zero_grep").Word()
+endfunction
 
-vim.api.nvim_create_user_command("ZeroGrepVword", function()
-  print(zero_grep.Vword())
-end, { range = true })
+function! g:Vword() abort
+    return v:lua.require("zero_grep").Vord()
+endfunction
 
-vim.api.nvim_create_user_command("ZeroGrepPword", function()
-  print(zero_grep.Pword())
-end, {})
+function! g:Pword() abort
+    return v:lua.require("zero_grep").Pword()
+endfunction
+
+function! g:ShellWord() abort
+    return v:lua.require("zero_grep").shell_Word()
+endfunction
+
+function! g:ShellVword() abort
+    return v:lua.require("zero_grep").shell_Vword()
+endfunction
+
+function! g:ShellPword() abort
+    return v:lua.require("zero_grep").shell_Pword()
+endfunction
+]])
