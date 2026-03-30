@@ -18,6 +18,14 @@ def! g:FileTypeArgs(...args: list<any>): string
     return call(zero_grep#filetype#Args, args)
 enddef
 
+def! g:DumbJumpCword(...args: list<any>): string
+    return call(zero_grep#dumb_jump#Cword, args)
+enddef
+
+def! g:DumbJumpCwordArgs(...args: list<any>): string
+    return call(zero_grep#dumb_jump#CwordArgs, args)
+enddef
+
 # ============================================================================
 # Commands
 # ============================================================================

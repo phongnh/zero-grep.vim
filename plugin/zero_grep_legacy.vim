@@ -17,6 +17,14 @@ function! g:FileTypeArgs(...) abort
     return zero_grep#legacy#filetype#Args(...)
 endfunction
 
+function! g:DumbJumpCword(...) abort
+    return zero_grep#legacy#dumb_jump#Cword(...)
+endfunction
+
+function! g:DumbJumpCwordArgs(...) abort
+    return zero_grep#legacy#dumb_jump#CwordArgs(...)
+endfunction
+
 " ============================================================================
 " Commands
 " ============================================================================

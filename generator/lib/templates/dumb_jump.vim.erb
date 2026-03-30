@@ -1,3 +1,6 @@
+" autoload/zero_grep/dumb_jump/legacy.vim - Dumb Jump definitions (legacy Vimscript)
+" Maintainer: Phong Nguyen
+"
 " NOTES:
 " - All language regular expressions are ported from https://github.com/jacktasia/dumb-jump/blob/master/dumb-jump.el
 
@@ -13,53 +16,53 @@ let s:definitions = {
   <% end -%>
           \ }
 
-function! s:Regexes(...) abort
-    let l:ft = get(a:, 1, &filetype !=# '' ? &filetype : &buftype)
-    if has_key(s:definitions, l:ft)
-        return s:definitions[l:ft]
-    endif
-    return []
+" ============================================================================
+" Private Helpers
+" ============================================================================
+
+function! s:regexes(...) abort
+    let l:ft = get(a:, 1, '')
+    let l:ft = empty(l:ft) ? (&filetype !=# '' ? &filetype : &buftype) : l:ft
+    return get(s:definitions, l:ft, [])
 endfunction
 
-function! <%= namespace %>#Cword() abort
-    let l:keyword = expand('<cword>')
+function! s:build_pattern(keyword, ...) abort
+    let l:ft = get(a:, 1, '')
     let l:patterns = []
-    for l:regex in s:Regexes()
-        call add(l:patterns, '(' .. substitute(l:regex, s:placeholder, l:keyword, 'g') .. ')')
+    for l:regex in s:regexes(l:ft)
+        call add(l:patterns, '(' .. substitute(l:regex, s:placeholder, a:keyword, 'g') .. ')')
     endfor
-    if len(l:patterns)
+    if len(l:patterns) > 0
         " call add(l:patterns, '(\b' .. l:keyword .. '\b)')
         " return shellescape('(' .. join(l:patterns, '|') .. ')')
-        return "\"(" .. join(l:patterns, '|') .. ")\""
+        return '"(' .. join(l:patterns, '|') .. ')"'
     endif
-    return shellescape('\b' .. l:keyword .. '\b')
+    return shellescape('\b' .. a:keyword .. '\b')
 endfunction
 
-function! <%= namespace %>#CwordRegex() abort
-    let l:keyword = expand('<cword>')
+function! s:build_pattern_args(keyword, ...) abort
+    let l:ft = get(a:, 1, '')
     let l:patterns = []
-    for l:regex in s:Regexes()
-        call add(patterns, '-e ' .. shellescape(substitute(l:regex, s:placeholder, l:keyword, 'g')))
+    for l:regex in s:regexes(l:ft)
+        call add(l:patterns, '-e ' .. shellescape(substitute(l:regex, s:placeholder, a:keyword, 'g')))
     endfor
-    if len(l:patterns)
-        " call add(l:patterns, '-e ' .. printf('''\b%s\b''', l:keyword))
+    if len(l:patterns) > 0
+        " call add(l:patterns, '-e ' .. shellescape('\b' .. l:keyword .. '\b'))
         return join(l:patterns, ' ')
     endif
-    return printf('''\b%s\b''', l:keyword)
+    return shellescape('\b' .. a:keyword .. '\b')
 endfunction
 
-function! <%= namespace %>#RgCword() abort
-    return '-s ' .. join(zero#filetype#RgFileTypeOpts(), ' ') .. ' ' .. <%= namespace %>#Cword()
+" ============================================================================
+" Public API
+" ============================================================================
+
+function! <%= namespace %>#Cword(...) abort
+    let l:ft = get(a:, 1, '')
+    return s:build_pattern(expand('<cword>'), l:ft)
 endfunction
 
-function! <%= namespace %>#RgCwordRegex() abort
-    return '-s ' .. join(zero#filetype#RgFileTypeOpts(), ' ') .. ' ' .. <%= namespace %>#CwordRegex()
-endfunction
-
-function! <%= namespace %>#GitCword() abort
-    return <%= namespace %>#Cword() .. ' ' .. join(zero#filetype#GitFileTypeOpts(), ' ')
-endfunction
-
-function! <%= namespace %>#GitCwordRegex() abort
-    return <%= namespace %>#CwordRegex() .. ' ' .. join(zero#filetype#GitFileTypeOpts(), ' ')
+function! <%= namespace %>#CwordRegex(...) abort
+    let l:ft = get(a:, 1, '')
+    return s:build_pattern_args(expand('<cword>'), l:ft)
 endfunction

@@ -9,12 +9,7 @@ vim9script
 const PLACEHOLDER = 'KEYWORD'
 
 const DEFINITIONS: dict<list<string>> = {
-    'c': [
-        '\bKEYWORD(\s|\))*\((\w|[,&*.<>:]|\s)*(\))\s*(const|->|\{|$)|typedef\s+(\w|[(*]|\s)+KEYWORD(\)|\s)*\(',
-        '\b(?!(class\b|struct\b|return\b|else\b|delete\b))(\w+|[,>])([*&]|\s)+KEYWORD\s*(\[(\d|\s)*\])*\s*([=,(){;]|:\s*\d)|#define\s+KEYWORD\b',
-        '\b(class|struct|enum|union)\b\s*KEYWORD\b\s*(final\s*)?(:((\s*\w+\s*::)*\s*\w*\s*<?(\s*\w+\s*::)*\w+>?\s*,*)+)?((\{|$))|}\s*KEYWORD\b\s*;',
-    ],
-    'cpp': [
+    'c++': [
         '\bKEYWORD(\s|\))*\((\w|[,&*.<>:]|\s)*(\))\s*(const|->|\{|$)|typedef\s+(\w|[(*]|\s)+KEYWORD(\)|\s)*\(',
         '\b(?!(class\b|struct\b|return\b|else\b|delete\b))(\w+|[,>])([*&]|\s)+KEYWORD\s*(\[(\d|\s)*\])*\s*([=,(){;]|:\s*\d)|#define\s+KEYWORD\b',
         '\b(class|struct|enum|union)\b\s*KEYWORD\b\s*(final\s*)?(:((\s*\w+\s*::)*\s*\w*\s*<?(\s*\w+\s*::)*\w+>?\s*,*)+)?((\{|$))|}\s*KEYWORD\b\s*;',
@@ -89,17 +84,9 @@ const DEFINITIONS: dict<list<string>> = {
         '\bKEYWORD\s*:\s*function\s*\(',
         '\bKEYWORD\s*=\s*function\s*\(',
     ],
-    'javascriptreact': [
-        "(service|factory)\(['\"]KEYWORD['\"]",
-        '\bKEYWORD\s*[=:]\s*\([^\)]*\)\s+=>',
-        '\bKEYWORD\s*\([^()]*\)\s*[{]',
-        'class\s*KEYWORD\s*[\(\{]',
-        'class\s*KEYWORD\s+extends',
-        '\s*\bKEYWORD\s*=[^=\n]+',
-        '\bfunction\b[^\(]*\(\s*[^\)]*\bKEYWORD\b\s*,?\s*\)?',
-        'function\s*KEYWORD\s*\(',
-        '\bKEYWORD\s*:\s*function\s*\(',
-        '\bKEYWORD\s*=\s*function\s*\(',
+    'hcl': [
+        '(variable|output|module)\s*"KEYWORD"\s*\{',
+        '(data|resource)\s*"\w+"\s*"KEYWORD"\s*\{',
     ],
     'typescript': [
         "(service|factory)\(['\"]KEYWORD['\"]",
@@ -117,27 +104,6 @@ const DEFINITIONS: dict<list<string>> = {
         '\bKEYWORD\s*=\s*function\s*\(',
         '\s*\bKEYWORD\s*=[^=\n]+',
         '\bfunction\b[^\(]*\(\s*[^\)]*\bKEYWORD\b\s*,?\s*\)?',
-    ],
-    'typescriptreact': [
-        "(service|factory)\(['\"]KEYWORD['\"]",
-        '\bKEYWORD\s*[=:]\s*\([^\)]*\)\s+=>',
-        '\bKEYWORD\s*\([^()]*\)\s*[{]',
-        'class\s*KEYWORD(\s*<[^>]*>)?\s*[\(\{]',
-        'class\s*KEYWORD(\s*<[^>]*>)?\s+extends',
-        '(export\s+)?interface\s+KEYWORD\b',
-        '(export\s+)?type\s+KEYWORD\b',
-        '(export\s+)?enum\s+KEYWORD\b',
-        '(declare\s+)?namespace\s+KEYWORD\b',
-        '(export\s+)?module\s+KEYWORD\b',
-        'function\s*KEYWORD\s*\(',
-        '\bKEYWORD\s*:\s*function\s*\(',
-        '\bKEYWORD\s*=\s*function\s*\(',
-        '\s*\bKEYWORD\s*=[^=\n]+',
-        '\bfunction\b[^\(]*\(\s*[^\)]*\bKEYWORD\b\s*,?\s*\)?',
-    ],
-    'hcl': [
-        '(variable|output|module)\s*"KEYWORD"\s*\{',
-        '(data|resource)\s*"\w+"\s*"KEYWORD"\s*\{',
     ],
     'lua': [
         '\s*\bKEYWORD\s*=[^=\n]+',
@@ -189,66 +155,45 @@ const DEFINITIONS: dict<list<string>> = {
         'message\s+KEYWORD\s*\{',
         'enum\s+KEYWORD\s*\{',
     ],
-}
-
-# Map Vim filetypes to definition keys
-const FILETYPE_MAP: dict<string> = {
-    'javascriptreact': 'javascriptreact',
-    'typescriptreact': 'typescriptreact',
-}
-
-# ============================================================================
-# rg filetype data (for type filtering)
-# ============================================================================
-
-const RG_FILETYPES: dict<list<string>> = {
-    'c':          ['*.[chH]', '*.[chH].in', '*.cats'],
-    'cmake':      ['*.cmake', 'CMakeLists.txt'],
-    'cpp':        ['*.[ChH]', '*.[ChH].in', '*.[ch]pp', '*.[ch]pp.in', '*.[ch]xx', '*.[ch]xx.in', '*.cc', '*.cc.in', '*.hh', '*.hh.in', '*.inl'],
-    'crystal':    ['*.cr', '*.ecr', 'Projectfile', 'shard.yml'],
-    'css':        ['*.css', '*.scss'],
-    'dart':       ['*.dart'],
-    'docker':     ['*Dockerfile*'],
-    'elixir':     ['*.eex', '*.ex', '*.exs', '*.heex', '*.leex', '*.livemd'],
-    'elm':        ['*.elm'],
-    'erlang':     ['*.erl', '*.hrl'],
-    'fennel':     ['*.fnl'],
-    'fish':       ['*.fish'],
-    'go':         ['*.go'],
-    'graphql':    ['*.graphql', '*.graphqls'],
-    'hcl':        ['*.hcl', '*.tf', '*.tfvars'],
-    'html':       ['*.ejs', '*.htm', '*.html'],
-    'js':         ['*.cjs', '*.js', '*.jsx', '*.mjs', '*.vue'],
-    'json':       ['*.json', '*.sarif', 'composer.lock'],
-    'lua':        ['*.lua'],
-    'make':       ['*.mak', '*.mk', 'Makefile.*', '[Mm]akefile', '[Mm]akefile.am', '[Mm]akefile.in'],
-    'markdown':   ['*.markdown', '*.md', '*.mdown', '*.mdwn', '*.mdx', '*.mkd', '*.mkdn'],
-    'protobuf':   ['*.proto'],
-    'python':     ['*.py', '*.pyi'],
-    'ruby':       ['*.gemspec', '*.rake', '*.rb', '*.rbw', '.irbrc', 'Gemfile', 'Rakefile', 'config.ru'],
-    'rust':       ['*.rs'],
-    'sh':         ['*.bash', '*.bashrc', '*.env', '*.ksh', '*.sh', '*.zsh', '.bashrc', '.profile', '.zshrc'],
-    'sql':        ['*.psql', '*.sql'],
-    'svelte':     ['*.svelte', '*.svelte.ts'],
-    'tf':         ['*.terraform.lock.hcl', '*.tf', '*.tfvars'],
-    'toml':       ['*.toml', 'Cargo.lock'],
-    'ts':         ['*.cts', '*.mts', '*.ts', '*.tsx'],
-    'typescript': ['*.cts', '*.mts', '*.ts', '*.tsx'],
-    'vim':        ['*.vim', '.vimrc', 'vimrc'],
-    'xml':        ['*.dtd', '*.rng', '*.xhtml', '*.xml', '*.xsd', '*.xsl', '*.xslt'],
-    'yaml':       ['*.yaml', '*.yml'],
-    'zig':        ['*.zig'],
-}
-
-const RG_FILETYPE_MAP: dict<string> = {
-    'javascript':      'js',
-    'javascriptreact': 'js',
-    'typescript':      'ts',
-    'typescriptreact': 'ts',
-    'python':          'py',
-    'sh':              'sh',
-    'bash':            'sh',
-    'zsh':             'sh',
+    'c': [
+        '\bKEYWORD(\s|\))*\((\w|[,&*.<>:]|\s)*(\))\s*(const|->|\{|$)|typedef\s+(\w|[(*]|\s)+KEYWORD(\)|\s)*\(',
+        '\b(?!(class\b|struct\b|return\b|else\b|delete\b))(\w+|[,>])([*&]|\s)+KEYWORD\s*(\[(\d|\s)*\])*\s*([=,(){;]|:\s*\d)|#define\s+KEYWORD\b',
+        '\b(class|struct|enum|union)\b\s*KEYWORD\b\s*(final\s*)?(:((\s*\w+\s*::)*\s*\w*\s*<?(\s*\w+\s*::)*\w+>?\s*,*)+)?((\{|$))|}\s*KEYWORD\b\s*;',
+    ],
+    'cpp': [
+        '\bKEYWORD(\s|\))*\((\w|[,&*.<>:]|\s)*(\))\s*(const|->|\{|$)|typedef\s+(\w|[(*]|\s)+KEYWORD(\)|\s)*\(',
+        '\b(?!(class\b|struct\b|return\b|else\b|delete\b))(\w+|[,>])([*&]|\s)+KEYWORD\s*(\[(\d|\s)*\])*\s*([=,(){;]|:\s*\d)|#define\s+KEYWORD\b',
+        '\b(class|struct|enum|union)\b\s*KEYWORD\b\s*(final\s*)?(:((\s*\w+\s*::)*\s*\w*\s*<?(\s*\w+\s*::)*\w+>?\s*,*)+)?((\{|$))|}\s*KEYWORD\b\s*;',
+    ],
+    'javascriptreact': [
+        "(service|factory)\(['\"]KEYWORD['\"]",
+        '\bKEYWORD\s*[=:]\s*\([^\)]*\)\s+=>',
+        '\bKEYWORD\s*\([^()]*\)\s*[{]',
+        'class\s*KEYWORD\s*[\(\{]',
+        'class\s*KEYWORD\s+extends',
+        '\s*\bKEYWORD\s*=[^=\n]+',
+        '\bfunction\b[^\(]*\(\s*[^\)]*\bKEYWORD\b\s*,?\s*\)?',
+        'function\s*KEYWORD\s*\(',
+        '\bKEYWORD\s*:\s*function\s*\(',
+        '\bKEYWORD\s*=\s*function\s*\(',
+    ],
+    'typescriptreact': [
+        "(service|factory)\(['\"]KEYWORD['\"]",
+        '\bKEYWORD\s*[=:]\s*\([^\)]*\)\s+=>',
+        '\bKEYWORD\s*\([^()]*\)\s*[{]',
+        'class\s*KEYWORD(\s*<[^>]*>)?\s*[\(\{]',
+        'class\s*KEYWORD(\s*<[^>]*>)?\s+extends',
+        '(export\s+)?interface\s+KEYWORD\b',
+        '(export\s+)?type\s+KEYWORD\b',
+        '(export\s+)?enum\s+KEYWORD\b',
+        '(declare\s+)?namespace\s+KEYWORD\b',
+        '(export\s+)?module\s+KEYWORD\b',
+        'function\s*KEYWORD\s*\(',
+        '\bKEYWORD\s*:\s*function\s*\(',
+        '\bKEYWORD\s*=\s*function\s*\(',
+        '\s*\bKEYWORD\s*=[^=\n]+',
+        '\bfunction\b[^\(]*\(\s*[^\)]*\bKEYWORD\b\s*,?\s*\)?',
+    ],
 }
 
 # ============================================================================
@@ -256,11 +201,8 @@ const RG_FILETYPE_MAP: dict<string> = {
 # ============================================================================
 
 def Regexes(ft: string = ''): list<string>
-    var filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
-    if has_key(DEFINITIONS, filetype)
-        return DEFINITIONS[filetype]
-    endif
-    return []
+    const filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
+    return get(DEFINITIONS, filetype, [])
 enddef
 
 def BuildPattern(keyword: string, ft: string = ''): string
@@ -275,48 +217,14 @@ def BuildPattern(keyword: string, ft: string = ''): string
 enddef
 
 def BuildPatternArgs(keyword: string, ft: string = ''): string
-    var args: list<string> = []
+    var patterns: list<string> = []
     for regex in Regexes(ft)
-        args->add('-e ' .. shellescape(substitute(regex, PLACEHOLDER, keyword, 'g')))
+        patterns->add('-e ' .. shellescape(substitute(regex, PLACEHOLDER, keyword, 'g')))
     endfor
-    if len(args) > 0
-        return join(args, ' ')
+    if len(patterns) > 0
+        return join(patterns, ' ')
     endif
-    return printf("'\\b%s\\b'", keyword)
-enddef
-
-def RgFileTypeOpts(ft: string = ''): list<string>
-    var filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
-    filetype = get(RG_FILETYPE_MAP, filetype, filetype)
-    var opts: list<string> = []
-    if !empty(filetype) && has_key(RG_FILETYPES, filetype)
-        opts->add('-t ' .. filetype)
-    else
-        var ext = expand('%:e')
-        if !empty(ext)
-            opts->add('-g ' .. shellescape(printf('*.{%s}', ext)))
-        endif
-    endif
-    return opts
-enddef
-
-def GitFileTypeOpts(ft: string = ''): list<string>
-    var filetype = empty(ft) ? (&filetype !=# '' ? &filetype : &buftype) : ft
-    filetype = get(RG_FILETYPE_MAP, filetype, filetype)
-    var opts: list<string> = []
-    if !empty(filetype) && has_key(RG_FILETYPES, filetype)
-        opts->add('--')
-        for glob in RG_FILETYPES[filetype]
-            opts->add(shellescape(glob))
-        endfor
-    else
-        var ext = expand('%:e')
-        if !empty(ext)
-            opts->add('--')
-            opts->add(shellescape(printf('*.{%s}', ext)))
-        endif
-    endif
-    return opts
+    return shellescape('\b' .. keyword .. '\b')
 enddef
 
 # ============================================================================
@@ -332,32 +240,4 @@ enddef
 # Returns multiple -e args for grep -E (no PCRE needed)
 export def CwordArgs(ft: string = ''): string
     return BuildPatternArgs(expand('<cword>'), ft)
-enddef
-
-# rg: -s -t <type> "(patterns)"  or  -s -g '*.ext' "(patterns)"
-export def RgCword(ft: string = ''): string
-    var type_opts = join(RgFileTypeOpts(ft), ' ')
-    var pattern   = Cword(ft)
-    return empty(type_opts)
-        ? '-s ' .. pattern
-        : '-s ' .. type_opts .. ' ' .. pattern
-enddef
-
-# git grep: "(patterns)" -- '*.ext' ...
-export def GitCword(ft: string = ''): string
-    var file_opts = join(GitFileTypeOpts(ft), ' ')
-    var pattern   = Cword(ft)
-    return empty(file_opts)
-        ? pattern
-        : pattern .. ' ' .. file_opts
-enddef
-
-# rg filetype opts only (useful for other callers)
-export def RgFileTypeArgs(ft: string = ''): string
-    return join(RgFileTypeOpts(ft), ' ')
-enddef
-
-# git filetype opts only
-export def GitFileTypeArgs(ft: string = ''): string
-    return join(GitFileTypeOpts(ft), ' ')
 enddef
