@@ -13,7 +13,7 @@ g:loaded_zero_grep = 1
 # Functions
 # ============================================================================
 def g:FileTypeArgs(...args: list<any>): string
-    return call(zero_grep#filetype#FileTypeArgs, args)
+    return call(zero_grep#filetype#Args, args)
 enddef
 
 def g:DumbJumpCword(...args: list<any>): string
