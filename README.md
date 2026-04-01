@@ -28,7 +28,6 @@ An additional **dumb_jump** module builds language-aware PCRE patterns from the 
 The `Insert*` functions inspect the current command line and return the appropriate flavour automatically:
 
 ```vim
-" Vim9script / legacy Vimscript
 cnoremap <expr> <C-R><C-W>  zero_grep#InsertCCword()
 cnoremap <expr> <C-R>w      zero_grep#InsertCword()
 cnoremap <expr> <C-R><C-A>  zero_grep#InsertWord()
@@ -68,18 +67,13 @@ For each `Insert*` function the command line is matched in this priority order:
 
 ```
 plugin/
-  zero_grep.vim          ← loaded by Vim (has vim9script, !nvim)
-  zero_grep_legacy.vim   ← loaded by legacy Vim (!vim9script, !nvim)
+  zero_grep.vim          ← loaded by Vim (!nvim)
   zero_grep.lua          ← loaded by Neovim
 autoload/
-  zero_grep.vim          ← Vim9script core + context dispatch
+  zero_grep.vim          ← Vim core + context dispatch
   zero_grep/
-    legacy.vim           ← legacy Vimscript core + context dispatch
-    dumb_jump.vim        ← Vim9script Dumb Jump patterns
-    filetype.vim         ← Vim9script filetype-aware rg/git grep args
-    legacy/
-      dumb_jump.vim      ← legacy Dumb Jump patterns
-      filetype.vim       ← legacy filetype-aware rg/git grep args
+    dumb_jump.vim        ← Vim Dumb Jump patterns
+    filetype.vim         ← Vim filetype-aware rg/git grep args
 lua/
   zero_grep.lua          ← Neovim core + context dispatch
   zero_grep/
@@ -91,17 +85,17 @@ lua/
 
 ### Global VimL functions
 
-All three implementations (Vim9script, legacy, Neovim) expose the same set of global functions:
+All two implementations (Vim and Neovim) expose the same set of global functions:
 
 ```vim
-g:CCword()           " → '\bword\b'   (Neovim only)
-g:Cword()            " → 'word'       (Neovim only)
+g:CCword()           " → '\bword\b'
+g:Cword()            " → 'word'
 g:Word()             " → 'WORD'
 g:Vword()            " → 'selection'
 g:Pword()            " → '\bpattern\b'
 
-g:ShellCCword()      " → shellescape('\bword\b')   (Neovim only)
-g:ShellCword()       " → shellescape('word')        (Neovim only)
+g:ShellCCword()      " → shellescape('\bword\b')
+g:ShellCword()       " → shellescape('word')
 g:ShellWord()        " → shell-escaped WORD
 g:ShellVword()       " → shell-escaped visual selection (trimmed)
 g:ShellPword()       " → shell-escaped last pattern (trimmed)
@@ -111,7 +105,7 @@ g:DumbJumpCwordArgs()      " → dumb-jump -e args for <cword>
 g:FileTypeArgs([tool])     " → filetype filter args for rg or git grep
 ```
 
-### Raw getters (Vim9script autoload)
+### Raw getters
 
 ```vim
 zero_grep#CCword()   " → '\bword\b'
@@ -121,7 +115,7 @@ zero_grep#Vword()    " → 'selection'
 zero_grep#Pword()    " → '\bpattern\b'
 ```
 
-### Contextual escape (Vim9script autoload)
+### Contextual escape
 
 ```vim
 zero_grep#GrepEscapeText(text)
@@ -145,7 +139,7 @@ zero_grep#LeaderfWord()         zero_grep#LeaderfVword()
 zero_grep#LeaderfPword()
 ```
 
-### Context-aware insert (Vim9script autoload)
+### Context-aware insert
 
 ```vim
 zero_grep#InsertCCword()
@@ -155,7 +149,7 @@ zero_grep#InsertVword()
 zero_grep#InsertPword()
 ```
 
-### Dumb Jump (Vim9script autoload)
+### Dumb Jump
 
 ```vim
 zero_grep#dumb_jump#Cword([ft])      " "(pat1|pat2|...)" — PCRE for rg -P / git grep -P
@@ -164,7 +158,7 @@ zero_grep#dumb_jump#CwordArgs([ft])  " -e 'pat1' -e 'pat2' ... — extended rege
 
 Falls back to `shellescape('\bword\b')` when no rules exist for the current filetype.
 
-### Filetype args (Vim9script autoload)
+### Filetype args
 
 Returns `-t <type>` (rg) or `-- '*.ext' ...` (git grep) derived from the current buffer's filetype. Auto-detects the tool from `grepprg` or the command prompt when `tool` is omitted.
 
@@ -224,4 +218,4 @@ zg.dumb_jump_cword_args([ft])     -- delegates to dj.cword_args()
 
 ## Requirements
 
-- Vim ≥ 9.0 (Vim9script), or Vim ≥ 8.0 (legacy Vimscript), **or** Neovim ≥ 0.7
+- Vim ≥ 8.0 **or** Neovim ≥ 0.7

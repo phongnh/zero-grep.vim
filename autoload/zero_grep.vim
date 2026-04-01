@@ -1,314 +1,310 @@
-vim9script
+" autoload/zero_grep.vim - Core word getters and context-aware dispatch
+" Maintainer: Phong Nguyen
 
-# autoload/zero_grep.vim - Core word getters and context-aware dispatch (Vim9script)
-# Maintainer: Phong Nguyen
+" ============================================================================
+" Escape Characters per Context
+" ============================================================================
 
-# ============================================================================
-# Escape Characters per Context
-# ============================================================================
+let s:grep_escape_chars      = '^$.*+?()[]{}|-'
+let s:substitute_escape_chars = '^$.*\/~[]'
+let s:shell_escape_chars     = '\^$.*+?()[]{}|-'
+let s:leaderf_escape_chars   = '\^$.*+?()[]{}|-"'
 
-const GREP_ESCAPE_CHARS      = '^$.*+?()[]{}|-'
-const SUBSTITUTE_ESCAPE_CHARS = '^$.*\/~[]'
-const SHELL_ESCAPE_CHARS     = '\^$.*+?()[]{}|-'
-const LEADERF_ESCAPE_CHARS   = '\^$.*+?()[]{}|-"'
+" ============================================================================
+" Trim
+" ============================================================================
 
-# ============================================================================
-# Raw Word Getters
-# ============================================================================
+function! s:trim(str) abort
+    if exists('*trim')
+        return trim(a:str)
+    endif
+    return substitute(a:str, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
 
-export def CCword(): string
-    return '\b' .. expand('<cword>') .. '\b'
-enddef
+" ============================================================================
+" Raw Word Getters
+" ============================================================================
 
-export def Cword(): string
+function! zero_grep#CCword() abort
+    return '\b' . expand('<cword>') . '\b'
+endfunction
+
+function! zero_grep#Cword() abort
     return expand('<cword>')
-enddef
+endfunction
 
-export def Word(): string
+function! zero_grep#Word() abort
     return expand('<cWORD>')
-enddef
+endfunction
 
-export def Vword(): string
+function! zero_grep#Vword() range abort
     if exists('*getregion')
         return trim(join(call('getregion', [getpos("'<"), getpos("'>")])->slice(0, 1), "\n"))
     endif
-    const line = getline("'<")
-    const [_b1, l1, c1, _o1] = getpos("'<")
-    const [_b2, l2, c2, _o2] = getpos("'>")
-    if l1 != l2
-        return trim(strpart(line, c1 - 1))
+    let l:line = getline("'<")
+    let [_b1, l:l1, l:c1, _o1] = getpos("'<")
+    let [_b2, l:l2, l:c2, _o2] = getpos("'>")
+    if l:l1 != l:l2
+        return trim(strpart(l:line, l:c1 - 1))
     endif
-    return trim(strpart(line, c1 - 1, c2 - c1 + 1))
-enddef
+    return trim(strpart(l:line, l:c1 - 1, l:c2 - l:c1 + 1))
+endfunction
 
-export def Pword(): string
-    const search = @/
-    if empty(search) || search ==# "\n"
+function! zero_grep#Pword() abort
+    let l:search = @/
+    if empty(l:search) || l:search ==# "\n"
         return ''
     endif
-    return substitute(search, '^\\<\(.\+\)\\>$', '\\b\1\\b', '')
-enddef
+    return substitute(l:search, '^\\<\(.\+\)\\>$', '\\b\1\\b', '')
+endfunction
 
-# ============================================================================
-# Escape Helpers
-# ============================================================================
+" ============================================================================
+" Escape Helpers
+" ============================================================================
 
-def GrepEscape(text: string): string
-    var t = substitute(text, '#', '\\\\#', 'g')
-    t = escape(t, GREP_ESCAPE_CHARS)
-    return shellescape(t)
-enddef
+function! s:grep_escape(text) abort
+    let l:t = substitute(a:text, '#', '\\\\#', 'g')
+    let l:t = escape(l:t, s:grep_escape_chars)
+    return shellescape(l:t)
+endfunction
 
-def SubstituteEscape(text: string): string
-    var t = escape(text, SUBSTITUTE_ESCAPE_CHARS)
-    return substitute(t, '\n', '\\n', 'g')
-enddef
+function! s:substitute_escape(text) abort
+    let l:t = escape(a:text, s:substitute_escape_chars)
+    return substitute(l:t, '\n', '\\n', 'g')
+endfunction
 
-def ShellEscape(text: string): string
-    return shellescape(escape(text, SHELL_ESCAPE_CHARS))
-enddef
+function! s:shell_escape(text) abort
+    return shellescape(escape(a:text, s:shell_escape_chars))
+endfunction
 
-def LeaderfEscape(text: string): string
-    return shellescape(escape(text, LEADERF_ESCAPE_CHARS))
-enddef
+function! s:leaderf_escape(text) abort
+    return shellescape(escape(a:text, s:leaderf_escape_chars))
+endfunction
 
-# ============================================================================
-# Context Detection
-# ============================================================================
+" ============================================================================
+" Context Detection
+" ============================================================================
 
-def IsSubstituteCommand(cmd: string): bool
-    return cmd =~# '^%\?\(s\|substitute\|S\|Subvert\)/' ||
-        cmd =~# '^\(silent!\?\s\+\)\?\(c\|l\)\(fdo\|do\)\s\+\(s\|substitute\|S\|Subvert\)/'
-enddef
+function! s:is_substitute_command(cmd) abort
+    return a:cmd =~# '^%\?\(s\|substitute\|S\|Subvert\)/' ||
+                \ a:cmd =~# '^\(silent!\?\s\+\)\?\(c\|l\)\(fdo\|do\)\s\+\(s\|substitute\|S\|Subvert\)/'
+endfunction
 
-def IsGrepCommand(cmd: string): bool
-    return cmd =~# '^\(Grep\|LGrep\|BGrep\|grep\|lgrep\)\s' ||
-        cmd =~# '^\(Ggrep!\?\|Gcgrep!\?\|Glgrep!\?\)\s' ||
-        cmd =~# '^\(Git!\?\s\+grep\)\s'
-enddef
+function! s:is_grep_command(cmd) abort
+    return a:cmd =~# '^\(Grep\|LGrep\|BGrep\|grep\|lgrep\)\s' ||
+                \ a:cmd =~# '^\(Ggrep!\?\|Gcgrep!\?\|Glgrep!\?\)\s' ||
+                \ a:cmd =~# '^\(Git!\?\s\+grep\)\s'
+endfunction
 
-def IsGrepperGitCommand(cmd: string): bool
-    return cmd =~# '^\(GrepperGit\)\s'
-enddef
+function! s:is_grepper_git_command(cmd) abort
+    return a:cmd =~# '^\(GrepperGit\)\s'
+endfunction
 
-def IsGrepperCommand(cmd: string): bool
-    return cmd =~# '^\(Grepper\|SGrepper\|LGrepper\|PGrepper\|TGrepper\|GrepperRg\)\s'
-enddef
+function! s:is_grepper_command(cmd) abort
+    return a:cmd =~# '^\(Grepper\|SGrepper\|LGrepper\|PGrepper\|TGrepper\|GrepperRg\)\s'
+endfunction
 
-def IsLeaderfCommand(cmd: string): bool
-    return cmd =~# '^\(Leaderf\|LF\)\s'
-enddef
+function! s:is_leaderf_command(cmd) abort
+    return a:cmd =~# '^\(Leaderf\|LF\)\s'
+endfunction
 
-def IsInputCommand(): bool
-    return getcmdtype() == '@'
-enddef
+function! s:is_input_command() abort
+    return getcmdtype() ==# '@'
+endfunction
 
-# ============================================================================
-# Context-Namespaced Escape Functions
-# ============================================================================
-# --- grep ---
+" ============================================================================
+" Context-Namespaced Escape Functions
+" ============================================================================
 
-export def GrepEscapeText(text: string): string
-    return GrepEscape(text)
-enddef
+" --- grep ---
 
-export def GrepCCword(): string
-    return GrepEscape(zero_grep#CCword())
-enddef
+function! zero_grep#GrepEscape(text) abort
+    return s:grep_escape(a:text)
+endfunction
 
-export def GrepCword(): string
-    return GrepEscape(zero_grep#Cword())
-enddef
+function! zero_grep#GrepCCword() abort
+    return s:grep_escape(zero_grep#CCword())
+endfunction
 
-export def GrepWord(): string
-    return GrepEscape(zero_grep#Word())
-enddef
+function! zero_grep#GrepCword() abort
+    return s:grep_escape(zero_grep#Cword())
+endfunction
 
-export def GrepVword(): string
-    return GrepEscape(zero_grep#Vword())
-enddef
+function! zero_grep#GrepWord() abort
+    return s:grep_escape(zero_grep#Word())
+endfunction
 
-export def GrepPword(): string
-    return GrepEscape(zero_grep#Pword())
-enddef
+function! zero_grep#GrepVword() range abort
+    return s:grep_escape(zero_grep#Vword())
+endfunction
 
-# --- substitute ---
+function! zero_grep#GrepPword() abort
+    return s:grep_escape(zero_grep#Pword())
+endfunction
 
-export def SubstituteEscapeText(text: string): string
-    return SubstituteEscape(text)
-enddef
+" --- substitute ---
 
-export def SubstituteCCword(): string
-    return '\<' .. zero_grep#Cword() .. '\>'
-enddef
+function! zero_grep#SubstituteEscape(text) abort
+    return s:substitute_escape(a:text)
+endfunction
 
-export def SubstituteCword(): string
+function! zero_grep#SubstituteCCword() abort
+    return '\<' . zero_grep#Cword() . '\>'
+endfunction
+
+function! zero_grep#SubstituteCword() abort
     return zero_grep#Cword()
-enddef
+endfunction
 
-export def SubstituteWord(): string
-    return SubstituteEscape(zero_grep#Word())
-enddef
+function! zero_grep#SubstituteWord() abort
+    return s:substitute_escape(zero_grep#Word())
+endfunction
 
-export def SubstituteVword(whole_word: bool = false): string
-    var t = SubstituteEscape(zero_grep#Vword())
-    return whole_word ? '\<' .. t .. '\>' : t
-enddef
+function! zero_grep#SubstituteVword(...) range abort
+    let l:whole_word = get(a:, 1, 0)
+    let l:t = s:substitute_escape(zero_grep#Vword())
+    return l:whole_word ? '\<' . l:t . '\>' : l:t
+endfunction
 
-export def SubstitutePword(): string
-    return SubstituteEscape(zero_grep#Pword())
-enddef
+function! zero_grep#SubstitutePword() abort
+    return s:substitute_escape(zero_grep#Pword())
+endfunction
 
-# --- shell ---
+" --- shell ---
 
-export def ShellEscapeText(text: string): string
-    return ShellEscape(text)
-enddef
+function! zero_grep#ShellEscape(text) abort
+    return s:shell_escape(a:text)
+endfunction
 
-export def ShellCCword(): string
+function! zero_grep#ShellCCword() abort
     return shellescape(zero_grep#CCword())
-enddef
+endfunction
 
-export def ShellCword(): string
+function! zero_grep#ShellCword() abort
     return shellescape(zero_grep#Cword())
-enddef
+endfunction
 
-export def ShellWord(): string
-    return ShellEscape(zero_grep#Word())
-enddef
+function! zero_grep#ShellWord() abort
+    return s:shell_escape(zero_grep#Word())
+endfunction
 
-export def ShellVword(): string
-    return ShellEscape(trim(zero_grep#Vword()))
-enddef
+function! zero_grep#ShellVword() range abort
+    return s:shell_escape(s:trim(zero_grep#Vword()))
+endfunction
 
-export def ShellPword(): string
-    return ShellEscape(trim(zero_grep#Pword()))
-enddef
+function! zero_grep#ShellPword() abort
+    return s:shell_escape(s:trim(zero_grep#Pword()))
+endfunction
 
-# --- leaderf ---
-# LeaderF uses its own regex engine; escape chars include '"' in addition to
-# the shell set. CCword and Cword are passed as plain shellescape (no regex
-# boundaries) because LeaderF handles word matching internally.
+" --- leaderf ---
+" LeaderF uses its own regex engine; escape chars include '"' in addition to
+" the shell set. CCword and Cword are passed as plain shellescape (no regex
+" boundaries) because LeaderF handles word matching internally.
 
-export def LeaderfEscapeText(text: string): string
-    return LeaderfEscape(text)
-enddef
+function! zero_grep#LeaderfEscape(text) abort
+    return s:leaderf_escape(a:text)
+endfunction
 
-export def LeaderfCCword(): string
+function! zero_grep#LeaderfCCword() abort
     return shellescape(zero_grep#CCword())
-enddef
+endfunction
 
-export def LeaderfCword(): string
+function! zero_grep#LeaderfCword() abort
     return shellescape(zero_grep#Cword())
-enddef
+endfunction
 
-export def LeaderfWord(): string
-    return LeaderfEscape(zero_grep#Word())
-enddef
+function! zero_grep#LeaderfWord() abort
+    return s:leaderf_escape(zero_grep#Word())
+endfunction
 
-export def LeaderfVword(): string
-    return LeaderfEscape(trim(zero_grep#Vword()))
-enddef
+function! zero_grep#LeaderfVword() range abort
+    return s:leaderf_escape(s:trim(zero_grep#Vword()))
+endfunction
 
-export def LeaderfPword(): string
-    return LeaderfEscape(trim(zero_grep#Pword()))
-enddef
+function! zero_grep#LeaderfPword() abort
+    return s:leaderf_escape(s:trim(zero_grep#Pword()))
+endfunction
 
-export def FileTypeArgs(tool: string = '', ft: string = ''): string
-    return zero_grep#filetype#Args(tool, ft)
-enddef
+" ============================================================================
+" Context-Aware Insert Functions (for <C-R>= mappings)
+" ============================================================================
 
-export def DumbJumpCword(ft: string = ''): string
-    return zero_grep#dumb_jump#Cword(ft)
-enddef
-
-export def DumbJumpCwordArgs(ft: string = ''): string
-    return zero_grep#dumb_jump#CwordArgs(ft)
-enddef
-
-# ============================================================================
-# Context-Aware Insert Functions (for <C-R>= mappings)
-# ============================================================================
-
-# Note: dumb_jump functions are called via autoload (zero_grep#dumb_jump#*)
-# because Vim9script import autoload cannot be used inside exported functions
-# that are themselves called from the command line at load time.
-
-export def InsertCCword(): string
-    var cmd = getcmdline()
-    if IsSubstituteCommand(cmd)
+function! zero_grep#InsertCCword() abort
+    let l:cmd = getcmdline()
+    if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteCCword()
-    elseif IsGrepperGitCommand(cmd)
+    elseif s:is_grepper_git_command(l:cmd)
         return zero_grep#dumb_jump#GitCword()
-    elseif IsGrepperCommand(cmd)
+    elseif s:is_grepper_command(l:cmd)
         return zero_grep#dumb_jump#RgCword()
-    elseif IsGrepCommand(cmd)
+    elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepCCword()
-    elseif IsLeaderfCommand(cmd)
+    elseif s:is_leaderf_command(l:cmd)
         return zero_grep#LeaderfCCword()
     else
         return zero_grep#ShellCCword()
     endif
-enddef
+endfunction
 
-export def InsertCword(): string
-    var cmd = getcmdline()
-    if IsSubstituteCommand(cmd)
+function! zero_grep#InsertCword() abort
+    let l:cmd = getcmdline()
+    if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteCword()
-    elseif IsGrepperGitCommand(cmd)
+    elseif s:is_grepper_git_command(l:cmd)
         return zero_grep#dumb_jump#GitCword()
-    elseif IsGrepperCommand(cmd)
+    elseif s:is_grepper_command(l:cmd)
         return zero_grep#dumb_jump#RgCword()
-    elseif IsGrepCommand(cmd)
+    elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepCCword()
-    elseif IsLeaderfCommand(cmd)
+    elseif s:is_leaderf_command(l:cmd)
         return zero_grep#LeaderfCword()
-    elseif IsInputCommand()
+    elseif s:is_input_command()
         return zero_grep#ShellCword()
     else
         return zero_grep#Cword()
     endif
-enddef
+endfunction
 
-export def InsertWord(): string
-    var cmd = getcmdline()
-    if IsSubstituteCommand(cmd)
+function! zero_grep#InsertWord() abort
+    let l:cmd = getcmdline()
+    if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteWord()
-    elseif IsGrepperGitCommand(cmd) || IsGrepperCommand(cmd)
+    elseif s:is_grepper_git_command(l:cmd) || s:is_grepper_command(l:cmd)
         return zero_grep#dumb_jump#RgCword()
-    elseif IsGrepCommand(cmd)
+    elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepWord()
-    elseif IsLeaderfCommand(cmd)
+    elseif s:is_leaderf_command(l:cmd)
         return zero_grep#LeaderfWord()
     else
         return zero_grep#ShellWord()
     endif
-enddef
+endfunction
 
-export def InsertVword(): string
-    var cmd = getcmdline()
-    if IsSubstituteCommand(cmd)
+function! zero_grep#InsertVword() abort
+    let l:cmd = getcmdline()
+    if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteVword()
-    elseif IsGrepCommand(cmd)
+    elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepVword()
-    elseif IsLeaderfCommand(cmd)
+    elseif s:is_leaderf_command(l:cmd)
         return zero_grep#LeaderfVword()
-    elseif IsInputCommand()
+    elseif s:is_input_command()
         return zero_grep#ShellVword()
     else
         return zero_grep#Vword()
     endif
-enddef
+endfunction
 
-export def InsertPword(): string
-    var cmd = getcmdline()
-    if IsSubstituteCommand(cmd)
+function! zero_grep#InsertPword() abort
+    let l:cmd = getcmdline()
+    if s:is_substitute_command(l:cmd)
         return zero_grep#SubstitutePword()
-    elseif IsGrepCommand(cmd)
+    elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepPword()
-    elseif IsLeaderfCommand(cmd)
+    elseif s:is_leaderf_command(l:cmd)
         return zero_grep#LeaderfPword()
     else
         return zero_grep#ShellPword()
     endif
-enddef
+endfunction
+
