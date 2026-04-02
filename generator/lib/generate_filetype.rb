@@ -68,7 +68,7 @@ class GenerateFiletype
     "zsh",
   ]
 
-  def initialize(namespace: "zero_grep#legacy#filetype")
+  def initialize(namespace: "zero_grep#filetype")
     @filename = "#{namespace.gsub("#", "/")}.vim"
     @output = File.basename(filename)
     @namespace = namespace

@@ -28,7 +28,7 @@ An additional **dumb_jump** module builds language-aware PCRE patterns from the 
 The `Insert*` functions inspect the current command line and return the appropriate flavour automatically:
 
 ```vim
-" Vim9script / legacy Vimscript
+" Vim9script (vim9/autoload/zero_grep.vim) / legacy Vimscript (autoload/zero_grep.vim)
 cnoremap <expr> <C-R><C-W>  zero_grep#InsertCCword()
 cnoremap <expr> <C-R>w      zero_grep#InsertCword()
 cnoremap <expr> <C-R><C-A>  zero_grep#InsertWord()
@@ -68,19 +68,23 @@ For each `Insert*` function the command line is matched in this priority order:
 
 ```
 plugin/
-  zero_grep.vim          ← loaded by Vim (has vim9script, !nvim)
-  zero_grep_legacy.vim   ← loaded by legacy Vim (!vim9script, !nvim)
-  zero_grep.lua          ← loaded by Neovim
-autoload/
-  zero_grep.vim          ← Vim9script core + context dispatch
+  zero_grep.vim          ← Vim entry point (!nvim): sources vim9/plugin/zero_grep.vim
+                           when vim9script is available, otherwise loads legacy autoload
+  zero_grep.lua          ← Neovim entry point
+autoload/                ← legacy Vimscript
+  zero_grep.vim          ← legacy core + context dispatch
   zero_grep/
-    legacy.vim           ← legacy Vimscript core + context dispatch
-    dumb_jump.vim        ← Vim9script Dumb Jump patterns
-    filetype.vim         ← Vim9script filetype-aware rg/git grep args
-    legacy/
-      dumb_jump.vim      ← legacy Dumb Jump patterns
-      filetype.vim       ← legacy filetype-aware rg/git grep args
-lua/
+    dumb_jump.vim        ← legacy Dumb Jump patterns
+    filetype.vim         ← legacy filetype-aware rg/git grep args
+vim9/                    ← Vim9script
+  plugin/
+    zero_grep.vim        ← Vim9script plugin entry point
+  autoload/
+    zero_grep.vim        ← Vim9script core + context dispatch
+    zero_grep/
+      dumb_jump.vim      ← Vim9script Dumb Jump patterns
+      filetype.vim       ← Vim9script filetype-aware rg/git grep args
+lua/                     ← Neovim Lua
   zero_grep.lua          ← Neovim core + context dispatch
   zero_grep/
     dumb_jump.lua        ← Neovim Dumb Jump patterns
@@ -94,14 +98,14 @@ lua/
 All three implementations (Vim9script, legacy, Neovim) expose the same set of global functions:
 
 ```vim
-g:CCword()           " → '\bword\b'   (Neovim only)
-g:Cword()            " → 'word'       (Neovim only)
+g:CCword()           " → '\bword\b'
+g:Cword()            " → 'word'
 g:Word()             " → 'WORD'
 g:Vword()            " → 'selection'
 g:Pword()            " → '\bpattern\b'
 
-g:ShellCCword()      " → shellescape('\bword\b')   (Neovim only)
-g:ShellCword()       " → shellescape('word')        (Neovim only)
+g:ShellCCword()      " → shellescape('\bword\b')
+g:ShellCword()       " → shellescape('word')
 g:ShellWord()        " → shell-escaped WORD
 g:ShellVword()       " → shell-escaped visual selection (trimmed)
 g:ShellPword()       " → shell-escaped last pattern (trimmed)
@@ -111,7 +115,9 @@ g:DumbJumpCwordArgs()      " → dumb-jump -e args for <cword>
 g:FileTypeArgs([tool])     " → filetype filter args for rg or git grep
 ```
 
-### Raw getters (Vim9script autoload)
+### Raw getters (Vim9script / legacy autoload)
+
+The `zero_grep#` autoload namespace is shared. When Vim9script is available, functions are loaded from `vim9/autoload/zero_grep.vim`; otherwise from `autoload/zero_grep.vim`.
 
 ```vim
 zero_grep#CCword()   " → '\bword\b'
@@ -121,31 +127,38 @@ zero_grep#Vword()    " → 'selection'
 zero_grep#Pword()    " → '\bpattern\b'
 ```
 
-### Contextual escape (Vim9script autoload)
+### Contextual escape (Vim9script / legacy autoload)
+
+The escape-text helper names differ between implementations. All other contextual functions share the same name across both.
+
+| Vim9script (`vim9/autoload/`)      | Legacy (`autoload/`)          |
+|------------------------------------|-------------------------------|
+| `zero_grep#GrepEscapeText(text)`   | `zero_grep#GrepEscape(text)`  |
+| `zero_grep#SubstituteEscapeText(text)` | `zero_grep#SubstituteEscape(text)` |
+| `zero_grep#ShellEscapeText(text)`  | `zero_grep#ShellEscape(text)` |
+| `zero_grep#LeaderfEscapeText(text)` | `zero_grep#LeaderfEscape(text)` |
+
+The following are identical in both implementations:
 
 ```vim
-zero_grep#GrepEscapeText(text)
 zero_grep#GrepCCword()          zero_grep#GrepCword()
 zero_grep#GrepWord()            zero_grep#GrepVword()
 zero_grep#GrepPword()
 
-zero_grep#SubstituteEscapeText(text)
 zero_grep#SubstituteCCword()    zero_grep#SubstituteCword()
 zero_grep#SubstituteWord()      zero_grep#SubstituteVword([whole_word])
 zero_grep#SubstitutePword()
 
-zero_grep#ShellEscapeText(text)
 zero_grep#ShellCCword()         zero_grep#ShellCword()
 zero_grep#ShellWord()           zero_grep#ShellVword()
 zero_grep#ShellPword()
 
-zero_grep#LeaderfEscapeText(text)
 zero_grep#LeaderfCCword()       zero_grep#LeaderfCword()
 zero_grep#LeaderfWord()         zero_grep#LeaderfVword()
 zero_grep#LeaderfPword()
 ```
 
-### Context-aware insert (Vim9script autoload)
+### Context-aware insert (Vim9script / legacy autoload)
 
 ```vim
 zero_grep#InsertCCword()
@@ -155,7 +168,7 @@ zero_grep#InsertVword()
 zero_grep#InsertPword()
 ```
 
-### Dumb Jump (Vim9script autoload)
+### Dumb Jump (Vim9script / legacy autoload)
 
 ```vim
 zero_grep#dumb_jump#Cword([ft])      " "(pat1|pat2|...)" — PCRE for rg -P / git grep -P
@@ -164,7 +177,7 @@ zero_grep#dumb_jump#CwordArgs([ft])  " -e 'pat1' -e 'pat2' ... — extended rege
 
 Falls back to `shellescape('\bword\b')` when no rules exist for the current filetype.
 
-### Filetype args (Vim9script autoload)
+### Filetype args (Vim9script / legacy autoload)
 
 Returns `-t <type>` (rg) or `-- '*.ext' ...` (git grep) derived from the current buffer's filetype. Auto-detects the tool from `grepprg` or the command prompt when `tool` is omitted.
 
@@ -174,7 +187,7 @@ zero_grep#filetype#GitFileTypeArgs([ft])   " → list<string>
 zero_grep#filetype#Args([tool], [ft])      " → string  (joined, tool auto-detected)
 ```
 
-Supported filetypes include: c, cpp, crystal, css, dart, elixir, erlang, fennel, go, hcl, javascript, javascriptreact, lua, python, ruby, rust, sh/bash/zsh/shell, sql, typescript, typescriptreact, zig, and more. See `autoload/zero_grep/filetype.vim` for the full list.
+Supported filetypes include: c, cpp, crystal, css, dart, elixir, erlang, fennel, go, hcl, javascript, javascriptreact, lua, python, ruby, rust, sh/bash/zsh/shell, sql, typescript, typescriptreact, zig, and more. See `vim9/autoload/zero_grep/filetype.vim` (Vim9script) or `autoload/zero_grep/filetype.vim` (legacy) for the full list.
 
 ### Neovim Lua
 
