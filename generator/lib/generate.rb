@@ -35,7 +35,7 @@ class Generate
     "protobuf",
   ]
 
-  def initialize(input: "dumb-jump-find-rules.el", namespace: "zero_grep#dumb_jump")
+  def initialize(input: "dumb-jump-find-rules.el", namespace: "zero_grep#legacy#dumb_jump")
     @filename = "#{namespace.gsub("#", "/")}.vim"
     @input = input
     @output = File.basename(filename)

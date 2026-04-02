@@ -1,69 +1,65 @@
-" plugin/zero_grep.vim - Word getter commands and mappings
+" plugin/zero_grep.vim - Word getter commands and mappings (Vim9script)
 " Maintainer: Phong Nguyen
 
-if has('nvim') || exists('g:loaded_zero_grep')
+if !has('vim9script') || has('nvim') || exists('g:loaded_zero_grep')
     finish
 endif
 
-let g:loaded_zero_grep = 1
+vim9script
 
-let s:save_cpo = &cpoptions
-set cpoptions&vim
+g:loaded_zero_grep = 1
 
-" ============================================================================
-" Functions
-" ============================================================================
-function! g:FileTypeArgs(...) abort
-    return zero_grep#filetype#Args(...)
-endfunction
+# ============================================================================
+# Functions
+# ============================================================================
+def g:FileTypeArgs(...args: list<any>): string
+    return call(zero_grep#filetype#Args, args)
+enddef
 
-function! g:DumbJumpCword(...) abort
-    return zero_grep#dumb_jump#Cword(...)
-endfunction
+def g:DumbJumpCword(...args: list<any>): string
+    return call(zero_grep#dumb_jump#Cword, args)
+enddef
 
-function! g:DumbJumpCwordArgs(...) abort
-    return zero_grep#dumb_jump#CwordArgs(...)
-endfunction
+def g:DumbJumpCwordArgs(...args: list<any>): string
+    return call(zero_grep#dumb_jump#CwordArgs, args)
+enddef
 
-function! g:CCword() abort
+def g:CCword(): string
     return zero_grep#CCword()
-endfunction
+enddef
 
-function! g:Cword() abort
+def g:Cword(): string
     return zero_grep#Cword()
-endfunction
+enddef
 
-function! g:Word() abort
+def g:Word(): string
     return zero_grep#Word()
-endfunction
+enddef
 
-function! g:Vword() abort
+def g:Vword(): string
     return zero_grep#Vword()
-endfunction
+enddef
 
-function! g:Pword() abort
+def g:Pword(): string
     return zero_grep#Pword()
-endfunction
+enddef
 
-function! g:ShellCCword() abort
+def g:ShellCCword(): string
     return zero_grep#ShellCCword()
-endfunction
+enddef
 
-function! g:ShellCword() abort
+def g:ShellCword(): string
     return zero_grep#ShellCword()
-endfunction
+enddef
 
-function! g:ShellWord() abort
+def g:ShellWord(): string
     return zero_grep#ShellWord()
-endfunction
+enddef
 
-function! g:ShellVword() abort
+def g:ShellVword(): string
     return zero_grep#ShellVword()
-endfunction
+enddef
 
-function! g:ShellPword() abort
+def g:ShellPword(): string
     return zero_grep#ShellPword()
-endfunction
-
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
+enddef
