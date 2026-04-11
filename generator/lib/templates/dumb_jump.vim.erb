@@ -62,7 +62,7 @@ function! <%= namespace %>#Cword(...) abort
     return s:build_pattern(expand('<cword>'), l:ft)
 endfunction
 
-function! <%= namespace %>#CwordRegex(...) abort
+function! <%= namespace %>#CwordArgs(...) abort
     let l:ft = get(a:, 1, '')
     return s:build_pattern_args(expand('<cword>'), l:ft)
 endfunction

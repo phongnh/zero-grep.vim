@@ -21,11 +21,11 @@ end
 task :generate do
   input = "dumb-jump-find-rules.el"
   Rake::Task["extract"].invoke unless File.exist?(input)
-  Generate.call(input: input, namespace: "zero#dumb_jump")
+  Generate.call(input: input, namespace: "zero_grep#dumb_jump")
 end
 
 task :filetype do
-  GenerateFiletype.call(namespace: "zero#filetype")
+  GenerateFiletype.call(namespace: "zero_grep#filetype")
 end
 
 task build: [:download, :extract, :generate]
