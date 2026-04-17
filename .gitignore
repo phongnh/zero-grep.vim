@@ -2,6 +2,3 @@
 .vimrc.*
 .init.*
 SCRATCH.*
-generator/gems/
-generator/dumb-jump-find-rules-with-comments.el
-generator/dumb-jump.el

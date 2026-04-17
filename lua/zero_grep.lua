@@ -205,20 +205,6 @@ function M.leaderf_pword()
   return leaderf_escape(trim(M.pword()))
 end
 
--- file type
-function M.file_type_args(tool, ft)
-  return require("zero_grep.filetype").args(tool, ft)
-end
-
--- dumb_jump
-function M.dumb_jump_cword(ft)
-  return require("zero_grep.dumb_jump").cword(ft)
-end
-
-function M.dumb_jump_cword_args(ft)
-  return require("zero_grep.dumb_jump").cword(ft)
-end
-
 -- ============================================================================
 -- Context Detection
 -- ============================================================================
@@ -239,16 +225,12 @@ local function is_grep_command(cmd)
     or cmd:match("^Git!?%s+grep%s") ~= nil
 end
 
-local function is_grepper_git_command(cmd)
-  return cmd:match("^GrepperGit%s") ~= nil
-end
-
 local function is_grepper_command(cmd)
-  return cmd:match("^[SLPT]?Grepper%s") ~= nil or cmd:match("^GrepperRg%s") ~= nil
+  return cmd:match("^[LP]?Grepper%s") ~= nil
 end
 
 local function is_leaderf_command(cmd)
-  return cmd:match("^Leaderf%s") ~= nil or cmd:match("^LF%s") ~= nil
+  return cmd:match("^Leaderf%srg%s") ~= nil
 end
 
 local function is_input_command()
@@ -263,10 +245,6 @@ function M.insert_ccword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
     return M.substitute_ccword()
-  elseif is_grepper_git_command(cmd) then
-    return M.dumb_jump_cword()
-  elseif is_grepper_command(cmd) then
-    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
     return M.grep_ccword()
   elseif is_leaderf_command(cmd) then
@@ -280,10 +258,6 @@ function M.insert_cword()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
     return M.substitute_cword()
-  elseif is_grepper_git_command(cmd) then
-    return M.dumb_jump_cword()
-  elseif is_grepper_command(cmd) then
-    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
     return M.grep_ccword()
   elseif is_leaderf_command(cmd) then
@@ -299,8 +273,6 @@ function M.insert_word()
   local cmd = vim.fn.getcmdline()
   if is_substitute_command(cmd) then
     return M.substitute_word()
-  elseif is_grepper_git_command(cmd) or is_grepper_command(cmd) then
-    return M.dumb_jump_cword()
   elseif is_grep_command(cmd) then
     return M.grep_word()
   elseif is_leaderf_command(cmd) then

@@ -1,6 +1,6 @@
 # zero-grep.vim
 
-Context-aware word extraction for Vim / Neovim — provides **CCword**, **Cword**, **Word**, **Vword**, and **Pword** with automatic escaping tuned to the active command context (`:substitute`, `:grep`, shell, Grepper, LeaderF, or Dumb Jump).
+Context-aware word extraction for Vim / Neovim — provides **CCword**, **Cword**, **Word**, **Vword**, and **Pword** with automatic escaping tuned to the active command context (`:substitute`, `:grep`, shell, Grepper, or LeaderF).
 
 ## What it provides
 
@@ -20,8 +20,6 @@ Each getter is available in four escape contexts:
 | `substitute` | Vim substitute-safe (`^$.*\/~[]`), newlines → `\n`                |
 | `shell`      | `shellescape()` + minimal regex escape (`\^$.*+?()[]{}|-`)        |
 | `leaderf`    | `shellescape()` + LeaderF regex escape (`\^$.*+?()[]{}|-"`)       |
-
-An additional **dumb_jump** module builds language-aware PCRE patterns from the [Dumb Jump](https://github.com/jacktasia/dumb-jump) rule set, used with Grepper/rg and `git grep`.
 
 ## Auto-dispatch (`<C-R>=` mappings)
 
@@ -52,12 +50,10 @@ vim.keymap.set('x', '<C-R>v',     zg.insert_vword,  { expr = true })
 For each `Insert*` function the command line is matched in this priority order:
 
 1. `:s/`, `:substitute/`, `:S/`, `:Subvert/`, `cfdo s/`, etc. → substitute escaping
-2. `GrepperGit ` → dumb_jump pattern (used as git grep `-P` argument)
-3. `Grepper `, `GrepperRg `, `SGrepper `, etc. → dumb_jump pattern (used as rg `-P` argument)
-4. `:grep`, `:Grep`, `:LGrep`, `:BGrep`, `Ggrep`, `Git grep`, etc. → grep escaping
-5. `Leaderf `, `LF ` → LeaderF escaping
-6. `@` cmdtype (i.e. `input()`) → shell escaping *(Cword / Vword only)*
-7. fallback → bare word *(Cword / Vword)* or shell escaping *(CCword / Word / Pword)*
+2. `:grep`, `:Grep`, `:LGrep`, `:BGrep`, `Ggrep`, `Git grep`, etc. → grep escaping
+3. `Leaderf rg`, → LeaderF escaping
+4. `@` cmdtype (i.e. `input()`) → shell escaping *(Cword / Vword only)*
+5. fallback → bare word *(Cword / Vword)* or shell escaping *(CCword / Word / Pword)*
 
 **LeaderF notes:**
 - `CCword` and `Cword` use only `shellescape()` (no regex-escape prefix); LeaderF handles word boundaries internally.
@@ -73,22 +69,13 @@ plugin/
   zero_grep.lua          ← Neovim entry point
 autoload/                ← legacy Vimscript
   zero_grep.vim          ← legacy core + context dispatch
-  zero_grep/
-    dumb_jump.vim        ← legacy Dumb Jump patterns
-    filetype.vim         ← legacy filetype-aware rg/git grep args
 vim9/                    ← Vim9script
   plugin/
     zero_grep.vim        ← Vim9script plugin entry point
   autoload/
     zero_grep.vim        ← Vim9script core + context dispatch
-    zero_grep/
-      dumb_jump.vim      ← Vim9script Dumb Jump patterns
-      filetype.vim       ← Vim9script filetype-aware rg/git grep args
 lua/                     ← Neovim Lua
   zero_grep.lua          ← Neovim core + context dispatch
-  zero_grep/
-    dumb_jump.lua        ← Neovim Dumb Jump patterns
-    filetype.lua         ← Neovim filetype-aware rg/git grep args
 ```
 
 ## API reference
@@ -109,10 +96,6 @@ g:ShellCword()       " → shellescape('word')
 g:ShellWord()        " → shell-escaped WORD
 g:ShellVword()       " → shell-escaped visual selection (trimmed)
 g:ShellPword()       " → shell-escaped last pattern (trimmed)
-
-g:DumbJumpCword()          " → dumb-jump PCRE pattern for <cword>
-g:DumbJumpCwordArgs()      " → dumb-jump -e args for <cword>
-g:FileTypeArgs([tool])     " → filetype filter args for rg or git grep
 ```
 
 ### Raw getters (Vim9script / legacy autoload)
@@ -168,33 +151,10 @@ zero_grep#InsertVword()
 zero_grep#InsertPword()
 ```
 
-### Dumb Jump (Vim9script / legacy autoload)
-
-```vim
-zero_grep#dumb_jump#Cword([ft])      " "(pat1|pat2|...)" — PCRE for rg -P / git grep -P
-zero_grep#dumb_jump#CwordArgs([ft])  " -e 'pat1' -e 'pat2' ... — extended regex args
-```
-
-Falls back to `shellescape('\bword\b')` when no rules exist for the current filetype.
-
-### Filetype args (Vim9script / legacy autoload)
-
-Returns `-t <type>` (rg) or `-- '*.ext' ...` (git grep) derived from the current buffer's filetype. Auto-detects the tool from `grepprg` or the command prompt when `tool` is omitted.
-
-```vim
-zero_grep#filetype#RgFileTypeArgs([ft])    " → list<string>
-zero_grep#filetype#GitFileTypeArgs([ft])   " → list<string>
-zero_grep#filetype#Args([tool], [ft])      " → string  (joined, tool auto-detected)
-```
-
-Supported filetypes include: c, cpp, crystal, css, dart, elixir, erlang, fennel, go, hcl, javascript, javascriptreact, lua, python, ruby, rust, sh/bash/zsh/shell, sql, typescript, typescriptreact, zig, and more. See `vim9/autoload/zero_grep/filetype.vim` (Vim9script) or `autoload/zero_grep/filetype.vim` (legacy) for the full list.
-
 ### Neovim Lua
 
 ```lua
 local zg = require('zero_grep')
-local dj = require('zero_grep.dumb_jump')
-local ft = require('zero_grep.filetype')
 
 -- Raw getters
 zg.ccword()   zg.cword()   zg.word()   zg.vword()   zg.pword()
@@ -219,20 +179,6 @@ zg.leaderf_vword()     zg.leaderf_pword()
 -- Context-aware insert (for keymaps)
 zg.insert_ccword()   zg.insert_cword()   zg.insert_word()
 zg.insert_vword()    zg.insert_pword()
-
--- Dumb Jump
-dj.cword([ft])        -- "(pat1|pat2|...)"
-dj.cword_args([ft])   -- "-e 'pat1' -e 'pat2' ..."
-
--- Filetype args
-ft.rg_filetype_args([ft])    -- { "-t lua" }
-ft.git_filetype_args([ft])   -- { "--", "'*.lua'" }
-ft.args([tool], [ft])        -- "-t lua"  (joined string, tool auto-detected)
-
--- Convenience wrappers on zg
-zg.file_type_args([tool], [ft])   -- delegates to ft.args()
-zg.dumb_jump_cword([ft])          -- delegates to dj.cword()
-zg.dumb_jump_cword_args([ft])     -- delegates to dj.cword_args()
 ```
 
 ## Requirements

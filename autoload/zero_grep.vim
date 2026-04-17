@@ -96,16 +96,12 @@ function! s:is_grep_command(cmd) abort
                 \ a:cmd =~# '^\(Git!\?\s\+grep\)\s'
 endfunction
 
-function! s:is_grepper_git_command(cmd) abort
-    return a:cmd =~# '^\(GrepperGit\)\s'
-endfunction
-
 function! s:is_grepper_command(cmd) abort
-    return a:cmd =~# '^\(Grepper\|SGrepper\|LGrepper\|PGrepper\|TGrepper\|GrepperRg\)\s'
+    return a:cmd =~# '^\(Grepper\|LGrepper\|PGrepper\)\s'
 endfunction
 
 function! s:is_leaderf_command(cmd) abort
-    return a:cmd =~# '^\(Leaderf\|LF\)\s'
+    return a:cmd =~# '^\(Leaderf\s\+rg\)\s'
 endfunction
 
 function! s:is_input_command() abort
@@ -233,10 +229,6 @@ function! zero_grep#InsertCCword() abort
     let l:cmd = getcmdline()
     if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteCCword()
-    elseif s:is_grepper_git_command(l:cmd)
-        return zero_grep#dumb_jump#GitCword()
-    elseif s:is_grepper_command(l:cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepCCword()
     elseif s:is_leaderf_command(l:cmd)
@@ -250,10 +242,6 @@ function! zero_grep#InsertCword() abort
     let l:cmd = getcmdline()
     if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteCword()
-    elseif s:is_grepper_git_command(l:cmd)
-        return zero_grep#dumb_jump#GitCword()
-    elseif s:is_grepper_command(l:cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepCCword()
     elseif s:is_leaderf_command(l:cmd)
@@ -269,8 +257,6 @@ function! zero_grep#InsertWord() abort
     let l:cmd = getcmdline()
     if s:is_substitute_command(l:cmd)
         return zero_grep#SubstituteWord()
-    elseif s:is_grepper_git_command(l:cmd) || s:is_grepper_command(l:cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif s:is_grep_command(l:cmd)
         return zero_grep#GrepWord()
     elseif s:is_leaderf_command(l:cmd)

@@ -87,16 +87,12 @@ def IsGrepCommand(cmd: string): bool
         cmd =~# '^\(Git!\?\s\+grep\)\s'
 enddef
 
-def IsGrepperGitCommand(cmd: string): bool
-    return cmd =~# '^\(GrepperGit\)\s'
-enddef
-
 def IsGrepperCommand(cmd: string): bool
-    return cmd =~# '^\(Grepper\|SGrepper\|LGrepper\|PGrepper\|TGrepper\|GrepperRg\)\s'
+    return cmd =~# '^\(Grepper\|LGrepper\|PGrepper\)\s'
 enddef
 
 def IsLeaderfCommand(cmd: string): bool
-    return cmd =~# '^\(Leaderf\|LF\)\s'
+    return cmd =~# '^\(Leaderf\s\+rg\)\s'
 enddef
 
 def IsInputCommand(): bool
@@ -214,34 +210,14 @@ export def LeaderfPword(): string
     return LeaderfEscape(trim(zero_grep#Pword()))
 enddef
 
-export def FileTypeArgs(tool: string = '', ft: string = ''): string
-    return zero_grep#filetype#Args(tool, ft)
-enddef
-
-export def DumbJumpCword(ft: string = ''): string
-    return zero_grep#dumb_jump#Cword(ft)
-enddef
-
-export def DumbJumpCwordArgs(ft: string = ''): string
-    return zero_grep#dumb_jump#CwordArgs(ft)
-enddef
-
 # ============================================================================
 # Context-Aware Insert Functions (for <C-R>= mappings)
 # ============================================================================
-
-# Note: dumb_jump functions are called via autoload (zero_grep#dumb_jump#*)
-# because Vim9script import autoload cannot be used inside exported functions
-# that are themselves called from the command line at load time.
 
 export def InsertCCword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
         return zero_grep#SubstituteCCword()
-    elseif IsGrepperGitCommand(cmd)
-        return zero_grep#dumb_jump#GitCword()
-    elseif IsGrepperCommand(cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
         return zero_grep#GrepCCword()
     elseif IsLeaderfCommand(cmd)
@@ -255,10 +231,6 @@ export def InsertCword(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
         return zero_grep#SubstituteCword()
-    elseif IsGrepperGitCommand(cmd)
-        return zero_grep#dumb_jump#GitCword()
-    elseif IsGrepperCommand(cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
         return zero_grep#GrepCCword()
     elseif IsLeaderfCommand(cmd)
@@ -274,8 +246,6 @@ export def InsertWord(): string
     var cmd = getcmdline()
     if IsSubstituteCommand(cmd)
         return zero_grep#SubstituteWord()
-    elseif IsGrepperGitCommand(cmd) || IsGrepperCommand(cmd)
-        return zero_grep#dumb_jump#RgCword()
     elseif IsGrepCommand(cmd)
         return zero_grep#GrepWord()
     elseif IsLeaderfCommand(cmd)

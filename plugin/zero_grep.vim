@@ -26,18 +26,6 @@ set cpoptions&vim
 " ============================================================================
 " Functions
 " ============================================================================
-function! g:FileTypeArgs(...) abort
-    return zero_grep#filetype#Args(...)
-endfunction
-
-function! g:DumbJumpCword(...) abort
-    return zero_grep#dumb_jump#Cword(...)
-endfunction
-
-function! g:DumbJumpCwordArgs(...) abort
-    return zero_grep#dumb_jump#CwordArgs(...)
-endfunction
-
 function! g:CCword() abort
     return zero_grep#CCword()
 endfunction

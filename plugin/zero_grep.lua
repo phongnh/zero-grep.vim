@@ -12,21 +12,6 @@ require("zero_grep").setup()
 -- Functions
 -- ============================================================================
 vim.cmd([[
-function! g:FileTypeArgs(...) abort
-    let l:tool = get(a:, 1, '')
-    return luaeval('require("zero_grep.filetype").args(_A[1])', [l:tool])
-endfunction
-
-function! g:DumbJumpCword(...) abort
-    let l:ft = get(a:, 1, '')
-    return luaeval('require("zero_grep").dumb_jump_cword(_A[1])', [l:ft])
-endfunction
-
-function! g:DumbJumpCwordArgs(...) abort
-    let l:ft = get(a:, 1, '')
-    return luaeval('require("zero_grep").dumb_jump_cword_args(_A[1])', [l:ft])
-endfunction
-
 function! g:CCword() abort
     return v:lua.require("zero_grep").ccword()
 endfunction
